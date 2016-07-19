@@ -7,10 +7,10 @@
     if (empty($vars['method']) || !in_array($vars['method'],array('GET','POST','PUT','DELETE'))) $vars['method'] = 'POST';
 
 ?>
-<a <?php if (!empty($vars['class'])) { ?> class="<?=$vars['class'];?>" <?php } ?> href="<?=($vars['url'])?>" onclick="<?php 
+<a <?php if (!empty($vars['class'])) { ?> class="<?=$vars['class'];?>" <?php } ?> <?php if (!empty($vars['title'])) { ?> title="<?=$vars['title'];?>" <?php } ?> href="<?=($vars['url'])?>" onclick="<?php 
     if ($vars['confirm']) {
-        ?>if (confirm('<?= $vars['confirm-text']; ?>')) { $('#<?=$uniqueID?>').submit(); return false; } else { return false; } <?php
-    } else { 
+        ?>if (confirm('<?= addslashes($vars['confirm-text']); ?>')) { $('#<?=$uniqueID?>').submit(); return false; } else { return false; } <?php
+    } else {
         ?>$('#<?=$uniqueID?>').submit(); return false; <?php
     } ?>"><?=($vars['label'])?></a>
 <?php
@@ -20,12 +20,12 @@
 ?>
 <form action="<?=($vars['url'])?>" style="display: none; margin: 0; padding: 0" id="<?=$uniqueID?>" method="<?=$vars['method']?>">
     <textarea name="json"><?=htmlspecialchars(json_encode($vars['data']))?></textarea>
-    <?=  \Idno\Core\site()->actions()->signForm($vars['url']);?>
+    <?=  \Idno\Core\Idno::site()->actions()->signForm($vars['url']);?>
 </form>
 <?php
 
     $form = ob_get_clean();
-    \Idno\Core\site()->template()->extendTemplateWithContent('shell/footer', $form);
+    \Idno\Core\Idno::site()->template()->extendTemplateWithContent('shell/footer', $form);
 
     // Prevent scope pollution
     unset($this->vars['confirm-text']);

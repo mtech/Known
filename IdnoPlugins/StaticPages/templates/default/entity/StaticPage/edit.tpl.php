@@ -46,27 +46,17 @@
                            value="<?= htmlspecialchars($title) ?>" class="form-control"/>
                 </p>
 
-                <div class="pages col-md-3">
-                    <label for="body">
-                        Body </label>
-                </div>
-
-                <p style="text-align: right">
-                    <small>
-                        <a href="#"
-                           onclick="tinymce.EditorManager.execCommand('mceRemoveEditor',true, 'body'); $('#plainTextSwitch').hide(); $('#richTextSwitch').show(); return false;"
-                           id="plainTextSwitch">Switch to plain text editor</a>
-                        <a href="#"
-                           onclick="makeRich('#body'); $('#plainTextSwitch').show(); $('#richTextSwitch').hide(); return false;"
-                           id="richTextSwitch" style="display:none">Switch to rich text editor</a></small>
-                </p>
-                </p>
-                    
-                        <textarea name="body" id="body" placeholder="Tell your story"
-                                  class="form-control bodyInput mentionable wysiwyg"><?= htmlspecialchars($this->autop($body)) ?></textarea>
 
 
-
+                <?= $this->__([
+                    'name' => 'body',
+                    'value' => $vars['object']->body,
+                    'wordcount' => false,
+                    'class' => 'wysiwyg',
+                    'height' => 100,
+                    'placeholder' => 'Tell your story',
+                    'label' => 'Body'
+                ])->draw('forms/input/richtext')?>
 
                 <?= $this->draw('entity/tags/input'); ?>
 
@@ -133,7 +123,7 @@
                     <p style="margin-bottom: 20px">
                         <strong>Show the page title as a heading?</strong><br>
                         <label class="radio-inline">
-                            <input type="radio" name="optionsRadios" id="title-heading" value="0" <?php
+                            <input type="radio" name="hide_title" id="title-heading" value="0" <?php
 
                                 if (empty($hide_title)) {
                                     echo 'checked';
@@ -143,7 +133,7 @@
                             Yes
                         </label>
                         <label class="radio-inline">
-                            <input type="radio" name="optionsRadios" id="title-heading" value="1" <?php
+                            <input type="radio" name="hide_title" id="title-heading" value="1" <?php
 
                                 if (!empty($hide_title)) {
                                     echo 'checked';
@@ -164,7 +154,7 @@
                 <?= $this->draw('content/access'); ?>
 
                 <p class="button-bar " style="text-align: right">
-                    <?= \Idno\Core\site()->actions()->signForm('/staticpages/edit') ?>
+                    <?= \Idno\Core\Idno::site()->actions()->signForm('/staticpages/edit') ?>
                     <input type="button" class="btn btn-cancel" value="Cancel" onclick="hideContentCreateForm();"/>
                     <input type="submit" class="btn btn-primary" value="Publish"/>
                 </p>
@@ -207,7 +197,7 @@
         function filePickerDialog(callback, value, meta) {
             tinymce.activeEditor.windowManager.open({
                 title: 'File Manager',
-                url: '<?=\Idno\Core\site()->config()->getDisplayURL()?>file/picker/?type=' + meta.filetype,
+                url: '<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>filepicker/?type=' + meta.filetype,
                 width: 650,
                 height: 550
             }, {

@@ -9,7 +9,7 @@
             <p>
 
             </p>
-            <form action="<?=\Idno\Core\site()->config()->getDisplayURL()?>account/register" method="post" style="width: 100%" class="form-horizontal">
+            <form action="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>account/register" method="post" style="width: 100%" class="form-horizontal">
                 <div class="control-group">
                    <label class="control-label" for="inputUsername">Your name</label>
                     <div class="controls">
@@ -17,7 +17,8 @@
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label" for="inputUsername">Choose a username</label>
+                    <label class="control-label" for="inputUsername">Choose a handle
+                        <br /><small>Handles identify you throughout the site. Something simple is best: for example, <em>janedoe</em>.</small></label>
                     <div class="controls">
                         <input type="text" id="inputUsername" placeholder="username" class="" style="width: 100%" name="handle" value="" autocapitalize="off">
                     </div>
@@ -29,11 +30,11 @@
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label" for="inputEmail">Create a password</label>
+                    <label class="control-label" for="inputEmail">Create a password
+                        <br /><small>At least 7 characters please.</small></label>
                     
                     <div class="controls">
                         <input type="password" id="inputPassword" placeholder="secret-password" class="" style="width: 100%" name="password" >
-                        <br /><small>(at least 7 characters please)</small>
                     </div>
                     
                 </div>
@@ -49,7 +50,7 @@
                         <input type="hidden" name="code" value="<?=htmlspecialchars($vars['code'])?>">
                     </div>
                 </div>
-                <?= \Idno\Core\site()->actions()->signForm('/account/register') ?>
+                <?= \Idno\Core\Idno::site()->actions()->signForm('/account/register') ?>
 
             </form>
         </div>

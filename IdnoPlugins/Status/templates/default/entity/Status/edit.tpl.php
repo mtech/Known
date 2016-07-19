@@ -18,7 +18,7 @@
     <div class="row">
 
         <div class="col-md-8 col-md-offset-2 edit-pane">
-            
+
             <p id="counter" style="display:none" class="pull-right">
                 <span class="count"></span>
             </p>
@@ -35,8 +35,8 @@
                 ?>
             </h4>
 
-            <textarea required name="body" id="body" class="content-entry mentionable form-control" placeholder="Share a quick note or comment. You can use links and hashtags."><?php
-                        
+            <textarea required name="body" id="body" class="content-entry mentionable form-control" placeholder="Share a quick note or comment. You can use links and #hashtags."><?php
+
                 if (!empty($vars['body'])) {
                     echo htmlspecialchars($vars['body']);
                 } else {
@@ -47,14 +47,14 @@
                 echo $this->draw('entity/tags/input');
 
             // Set focus so you can start typing straight away (on shares)
-            if (\Idno\Core\site()->currentPage()->getInput('share_url')) {
+            if (\Idno\Core\Idno::site()->currentPage()->getInput('share_url')) {
             ?>
             <script>
                 $(document).ready(function(){
                     var content = $('#body').val();
                     var len = content.length;
                     var element = $('#body');
-                 
+
                     $('#body').focus(function(){
                         $(this).prop('selectionStart', len);
                     });
@@ -64,14 +64,14 @@
             <?php
             }
             ?>
-            
+
             <p>
                 <small><a id="inreplyto-add" href="#"
                           onclick="$('#inreplyto').append('<span><input required type=&quot;url&quot; name=&quot;inreplyto[]&quot; value=&quot;&quot; placeholder=&quot;Add the URL that you\'re replying to&quot; class=&quot;form-control&quot; onchange=&quot;adjust_content(this.value)&quot; /> <small><a href=&quot;#&quot; onclick=&quot;$(this).parent().parent().remove(); return false;&quot;><icon class=&quot;fa fa-times&quot;></icon> Remove URL</a></small><br /></span>'); return false;"><i class="fa fa-reply"></i>
                         Reply to a site</a></small>
             </p>
-            
-            
+
+
             <div id="inreplyto">
                 <?php
                     if (!empty($vars['object']->inreplyto)) {
@@ -82,7 +82,7 @@
                                        placeholder="Add the URL that you're replying to"
                                        class="form-control inreplyto" value="<?= htmlspecialchars($inreplyto) ?>" onchange="adjust_content(this.value)"/>
                                 <small><a href="#"
-                                          onclick="$(this).parent().parent().remove(); return false;"><i class="fa fa-times"></i> 
+                                          onclick="$(this).parent().parent().remove(); return false;"><i class="fa fa-times"></i>
                                           Remove URL</a></small>
                             </p>
                         <?php
@@ -91,12 +91,12 @@
                 ?>
             </div>
 
-            <?php if (empty($vars['object']->_id)) { ?><input type="hidden" name="forward-to" value="<?= \Idno\Core\site()->config()->getDisplayURL() . 'content/all/'; ?>" /><?php } ?>
-            <?php if (empty($vars['object']->_id)) echo $this->drawSyndication('note'); ?>
+            <?php if (empty($vars['object']->_id)) { ?><input type="hidden" name="forward-to" value="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'content/all/'; ?>" /><?php } ?>
+            <?php echo $this->drawSyndication('note', $vars['object']->getPosseLinks()); ?>
             <?= $this->draw('content/access'); ?>
 
             <p class="button-bar">
-                <?= \Idno\Core\site()->actions()->signForm('/status/edit') ?>
+                <?= \Idno\Core\Idno::site()->actions()->signForm('/status/edit') ?>
                 <input type="button" class="btn btn-cancel" value="Cancel" onclick="hideContentCreateForm();"/>
                 <input type="submit" class="btn btn-primary" value="Publish"/>
             </p>
@@ -107,9 +107,10 @@
             </p>
         </div>
 
-               
+
     </div>
 </form>
+<script src="<?=\Idno\Core\Idno::site()->config()->getStaticURL()?>IdnoPlugins/Status/external/brevity-js/brevity.js"></script>
 <script>
     function adjust_content(url) {
         var username = url.match(/https?:\/\/([a-z]+\.)?twitter\.com\/(#!\/)?@?([^\/]*)/)[3];
@@ -122,7 +123,7 @@
     }
 
     function count_chars() {
-        var len = $('#body').val().length;
+        var len = brevity.tweetLength($('#body').val());
 
         if (len > 0) {
             if (!$('#counter').is(":visible")) {
@@ -142,7 +143,7 @@
         $("#inreplyto-add").on('dragenter', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            $('#inreplyto').append('<span><input required type="url" name="inreplyto[]" value="" placeholder="The website address of the post you\'re replying to" class="col-md-8 inreplyto" onchange="adjust_content(this.value)" /> <small><a href="#" onclick="$(this).parent().parent().remove(); return false;">Remove</a></small><br /></span>');
+            $('#inreplyto').append('<span><input required type="url" name="inreplyto[]" value="" placeholder="Add the URL that you\'re replying to" class="form-control" onchange="adjust_content(this.value)" /> <small><a href="#" onclick="$(this).parent().parent().remove(); return false;"><icon class="fa fa-times"></icon> Remove URL</a></small><br /></span>'); return false;
         });
     });
 </script>

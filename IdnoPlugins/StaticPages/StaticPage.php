@@ -26,6 +26,33 @@
                 return '';
             }
 
+            function getPriority()
+            {
+                if (!empty($this->priority)) {
+                    return $this->priority;
+                }
+
+                return 0;
+            }
+
+            function getSetAsHomepageURL()
+            {
+                return \Idno\Core\site()->config()->getDisplayURL() . $this->getClassSelector() . '/homepage/set/' . $this->getID();
+            }
+
+            function getClearHomepageURL()
+            {
+                return \Idno\Core\site()->config()->getDisplayURL() . $this->getClassSelector() . '/homepage/clear/' . $this->getID();
+            }
+
+            function isHomepage()
+            {
+                if ($staticpages = \Idno\Core\site()->plugins()->get('StaticPages')) {
+                    return $staticpages->getCurrentHomepageId() == $this->getID();
+                }
+                return false;
+            }
+
             function getActivityStreamsObjectType()
             {
                 return 'article';
@@ -45,7 +72,7 @@
 
                 // If a slug has been set, use it
                 if ($slug = $this->getSlug()) {
-                    return \Idno\Core\site()->config()->getURL() . 'pages/' . $slug;
+                    return \Idno\Core\Idno::site()->config()->getURL() . 'pages/' . $slug;
                 }
 
                 $new = false;
@@ -63,14 +90,14 @@
                     }
                 }
 
-                return \Idno\Core\site()->config()->url . $this->getClassSelector() . '/edit';
+                return \Idno\Core\Idno::site()->config()->url . $this->getClassSelector() . '/edit';
 
             }
 
             function canEdit($user_id = '')
             {
                 if (empty($user_id)) {
-                    $user = \Idno\Core\site()->session()->currentUser();
+                    $user = \Idno\Core\Idno::site()->session()->currentUser();
                 } else {
                     $user = User::getByUUID($user_id);
                 }
@@ -87,14 +114,14 @@
             function saveDataFromInput()
             {
 
-                $body        = \Idno\Core\site()->currentPage()->getInput('body');
-                $title       = \Idno\Core\site()->currentPage()->getInput('title');
-                $category    = \Idno\Core\site()->currentPage()->getInput('category');
-                $forward_url = \Idno\Core\site()->currentPage()->getInput('forward_url');
-                $hide_title  = \Idno\Core\site()->currentPage()->getInput('hide_title');
-                $access      = \Idno\Core\site()->currentPage()->getInput('access');
+                $body        = \Idno\Core\Idno::site()->currentPage()->getInput('body');
+                $title       = \Idno\Core\Idno::site()->currentPage()->getInput('title');
+                $category    = \Idno\Core\Idno::site()->currentPage()->getInput('category');
+                $forward_url = \Idno\Core\Idno::site()->currentPage()->getInput('forward_url');
+                $hide_title  = \Idno\Core\Idno::site()->currentPage()->getInput('hide_title');
+                $access      = \Idno\Core\Idno::site()->currentPage()->getInput('access');
 
-                if ($staticpages = \Idno\Core\site()->plugins()->get('StaticPages')) {
+                if ($staticpages = \Idno\Core\Idno::site()->plugins()->get('StaticPages')) {
                     /* @var IdnoPlugins\StaticPages\Main $staticpages */
                     $categories = $staticpages->getCategories();
                         if (in_array($category, $categories) || $category == 'No Category') {
@@ -106,12 +133,12 @@
                             $this->hide_title  = $hide_title;
                             $this->setAccess($access);
 
-                            if ($result = $this->save()) {
+                            if ($result = $this->publish()) {
                                 return true;
                             }
 
                         } else {
-                            \Idno\Core\site()->session()->addMessage("Your selected category wasn't found in the list.");
+                            \Idno\Core\Idno::site()->session()->addMessage("Your selected category wasn't found in the list.");
                         }
                     //}
                 }

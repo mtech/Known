@@ -15,14 +15,26 @@
                     $object = \IdnoPlugins\Text\Entry::getByID($this->arguments[0]);
                 } else {
                     $object = new \IdnoPlugins\Text\Entry();
+                    $autosave = new \Idno\Core\Autosave();
+                    foreach (array(
+                        'title', 'body'
+                    ) as $field) {
+                        $object->$field = $autosave->getValue('entry', $field);
+                    }
                 }
 
-                $t = \Idno\Core\site()->template();
-                $body = $t->__(array(
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
+                $edit_body = $t->__(array(
                     'object' => $object
                 ))->draw('entity/Entry/edit');
 
-                if (empty($vars['object']->_id)) {
+                $body = $t->__(['body' => $edit_body])->draw('entity/editwrapper');
+
+                if (empty($object->_id)) {
                     $title = 'Write an entry';
                 } else {
                     $title = 'Edit entry';
@@ -46,9 +58,9 @@
                     $object = new \IdnoPlugins\Text\Entry();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     (new \Idno\Core\Autosave())->clearContext('entry');
-                    //$this->forward(\Idno\Core\site()->config()->getURL() . 'content/all/');
+                    //$this->forward(\Idno\Core\Idno::site()->config()->getURL() . 'content/all/');
                     //$this->forward($object->getDisplayURL());
                     $forward = $this->getInput('forward-to', $object->getDisplayURL());
                     $this->forward($forward);

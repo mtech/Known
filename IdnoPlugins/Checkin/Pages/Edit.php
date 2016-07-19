@@ -15,7 +15,11 @@
                     $object = new \IdnoPlugins\Checkin\Checkin();
                 }
 
-                $t = \Idno\Core\site()->template();
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
                 $body = $t->__(array(
                     'object' => $object
                 ))->draw('entity/Checkin/edit');
@@ -44,7 +48,7 @@
                     $object = new \IdnoPlugins\Checkin\Checkin();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     $forward = $this->getInput('forward-to', $object->getDisplayURL());
                     $this->forward($forward);
                 }

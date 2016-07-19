@@ -14,7 +14,7 @@
                         <?= $this->draw('entity/User/profile/contact') ?>
                     </p>
 
-                    <p style="margin-bottom: 2em" clear="all"></p>
+                    <p style="margin-bottom: 2em" class="clearall"></p>
                 </div>
             </div>
         </div>-->
@@ -27,7 +27,7 @@
 
                         <?php
 
-                            if ($vars['user']->canEdit() && $vars['user']->getUUID() == \Idno\Core\site()->session()->currentUserUUID()) {
+                            if ($vars['user']->canEdit() && $vars['user']->getUUID() == \Idno\Core\Idno::site()->session()->currentUserUUID()) {
                                 // If you're wondering, this is wrapped in an h1 tag to keep it aligned with
                                 // the user's name over in the next div. TODO: find a better way to do this
                                 // that retains visual consistency.
@@ -55,7 +55,7 @@
                                 $description = $vars['user']->getDescription();
                                 if (!empty($description)) {
                                     echo '<div class="highlightedText">' . $this->autop($vars['user']->getDescription()) . '</div>';
-                                } else if ($vars['user']->getUUID() == \Idno\Core\site()->session()->currentUserUUID()) {
+                                } else if ($vars['user']->getUUID() == \Idno\Core\Idno::site()->session()->currentUserUUID()) {
                                     ?>
                                     <p class="highlightedText">
                                         A profile helps you describe yourself to other people on the site

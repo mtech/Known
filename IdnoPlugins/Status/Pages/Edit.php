@@ -15,13 +15,19 @@
                     $object = \IdnoPlugins\Status\Status::factory();
                 }
 
-                $t = \Idno\Core\site()->template();
-                $body = $t->__(array(
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
+                $edit_body = $t->__(array(
                     'object' => $object,
                     'url' => $this->getInput('url'),
                     'body' => $this->getInput('body'),
                     'tags' => $this->getInput('tags')
                 ))->draw('entity/Status/edit');
+
+                $body = $t->__(['body' => $edit_body])->draw('entity/editwrapper');
 
                 if (empty($object)) {
                     $title = 'What are you up to?';
@@ -47,7 +53,7 @@
                     $object = \IdnoPlugins\Status\Status::factory();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     $forward = $this->getInput('forward-to', $object->getDisplayURL());
                     $this->forward($forward);
                 }

@@ -6,6 +6,10 @@
 
     namespace Idno\Pages {
 
+        use Idno\Core\Webmention;
+        use Idno\Entities\Notification;
+        use Idno\Entities\User;
+
         /**
          * Default class to serve the homepage
          */
@@ -24,7 +28,17 @@
 
                 // Check for an empty site
                 if (!\Idno\Entities\User::get()) {
-                    $this->forward(\Idno\Core\site()->config()->getURL() . 'begin/');
+                    $this->forward(\Idno\Core\Idno::site()->config()->getURL() . 'begin/');
+                }
+
+                // Set the homepage owner for single-user sites
+                if (!$this->getOwner() && \Idno\Core\Idno::site()->config()->single_user) {
+                    $owners = \Idno\Entities\User::get(['admin' => true]);
+                    if (count($owners) === 1) {
+                        $this->setOwner($owners[0]);
+                    } else {
+                        \Idno\Core\Idno::site()->logging()->warning('Expected exactly 1 admin user for single-user site; got '.count($owners));
+                    }
                 }
 
                 if (!empty($this->arguments[0])) { // If we're on the friendly content-specific URL
@@ -48,28 +62,27 @@
                 } else {
                     // If user has content-specific preferences, do something with $friendly_types
                     if (empty($query)) {
-                        $types = \Idno\Core\site()->config()->getHomepageContentTypes();
+                        $types = \Idno\Core\Idno::site()->config()->getHomepageContentTypes();
                     }
                 }
 
                 $search = array();
 
                 if (!empty($query)) {
-                    $search = \Idno\Core\site()->db()->createSearchArray($query);
+                    $search = \Idno\Core\Idno::site()->db()->createSearchArray($query);
                 }
 
                 if (empty($types)) {
                     $types = \Idno\Common\ContentType::getRegisteredClasses();
                 } else {
-                    if (!is_array($types)) $types = array($types);
-                    $types[] = '!Idno\Entities\ActivityStreamPost';
+                    $types = (array) $types;
                 }
 
-                $count = \Idno\Entities\ActivityStreamPost::countFromX($types, array());
-                $feed  = \Idno\Entities\ActivityStreamPost::getFromX($types, $search, array(), \Idno\Core\site()->config()->items_per_page, $offset);
-                if (\Idno\Core\site()->session()->isLoggedIn()) {
+                $count = \Idno\Common\Entity::countFromX($types, array());
+                $feed  = \Idno\Common\Entity::getFromX($types, $search, array(), \Idno\Core\Idno::site()->config()->items_per_page, $offset);
+                if (\Idno\Core\Idno::site()->session()->isLoggedIn()) {
                     $create = \Idno\Common\ContentType::getRegistered();
-                    
+
                     // If we can't create an object of this type, hide from the button bar
                     foreach ($create as $key => $obj) {
                         if (!$obj->createable) {
@@ -80,8 +93,8 @@
                     $create = false;
                 }
 
-                if (!empty(\Idno\Core\site()->config()->description)) {
-                    $description = \Idno\Core\site()->config()->description;
+                if (!empty(\Idno\Core\Idno::site()->config()->description)) {
+                    $description = \Idno\Core\Idno::site()->config()->description;
                 } else {
                     $description = 'An independent social website, powered by Known.';
                 }
@@ -94,10 +107,16 @@
                     }
                 }
 
-                $t = \Idno\Core\site()->template();
+                if (!empty(\Idno\Core\Idno::site()->config()->homepagetitle)) {
+                    $title = \Idno\Core\Idno::site()->config()->homepagetitle;
+                } else {
+                    $title = \Idno\Core\Idno::site()->config()->title;
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
                 $t->__(array(
 
-                    'title'       => \Idno\Core\site()->config()->title,
+                    'title'       => $title,
                     'description' => $description,
                     'content'     => $friendly_types,
                     'body'        => $t->__(array(
@@ -110,6 +129,36 @@
                     ))->draw('pages/home'),
 
                 ))->drawPage();
+            }
+
+            /**
+             * A webmention to the homepage means someone mentioned our site's root.
+             */
+            function webmentionContent($source, $target, $source_response, $source_mf2)
+            {
+                // if this is a single-user site, let's forward on the root mention
+                // to their user page
+
+                \Idno\Core\Idno::site()->logging()->info("received homepage mention from $source");
+
+                if (\Idno\Core\Idno::site()->config()->single_user) {
+                    $user = \Idno\Entities\User::getOne(['admin' => true]);
+                    if ($user) {
+                        \Idno\Core\Idno::site()->logging()->debug("pass on webmention to solo user: {$user->getHandle()}");
+                        $userPage = \Idno\Core\Idno::site()->getPageHandler($user->getURL());
+                        if ($userPage) {
+                            return $userPage->webmentionContent($source, $target, $source_response, $source_mf2);
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->debug("failed to find a Page to serve route " . $user->getURL());
+                        }
+                    } else {
+                        \Idno\Core\Idno::site()->logging()->debug("query for an admin-user failed to find one");
+                    }
+                } else {
+                    \Idno\Core\Idno::site()->logging()->debug("disregarding mention to multi-user site");
+                }
+
+                return false;
             }
 
         }

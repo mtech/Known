@@ -13,7 +13,7 @@
                 <a href="<?= $item->getAuthorURL() ?>"><?= $item->getAuthorName() ?></a>published this
                 <a class="u-url url" href="<?= $item->getDisplayURL() ?>" rel="permalink">
                     <time class="dt-published"
-                          datetime="<?= date('c', $item->created) ?>"><?= date('c', $item->created) ?></time>
+                          datetime="<?= date('c', $item->created) ?>"><?= date('F j, Y', $item->created) ?></time>
                 </a>
             </p>
         </div>
@@ -30,8 +30,8 @@
                     $heart_text = $likes . ' stars';
                 }
                 $heart = $heart_only . ' ' . $heart_text;
-                if (\Idno\Core\site()->session()->isLoggedOn()) {
-                    echo \Idno\Core\site()->actions()->createLink(\Idno\Core\site()->config()->getDisplayURL() . 'annotation/post', $heart_only, array('type' => 'like', 'object' => $vars['object']->getUUID()), array('method' => 'POST', 'class' => 'stars'));
+                if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
+                    echo \Idno\Core\Idno::site()->actions()->createLink(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'annotation/post', $heart_only, array('type' => 'like', 'object' => $vars['object']->getUUID()), array('method' => 'POST', 'class' => 'stars'));
                     ?>
                     <a class="stars" href="<?= $vars['object']->getDisplayURL() ?>#comments"><?= $heart_text ?></a>
                 <?php
@@ -58,10 +58,10 @@
                     echo '<i class="fa fa-calendar-o"></i> ' . $rsvps;
                 } ?></a>
         </div>
-        <br clear="all"/>
+        <br class="clearall"/>
         <?php
 
-        if (\Idno\Core\site()->currentPage()->isPermalink()) {
+        if (\Idno\Core\Idno::site()->currentPage()->isPermalink()) {
 
             if (!empty($likes) || !empty($replies) || !empty($shares) || !empty($rsvps)) {
 
@@ -119,7 +119,7 @@
 
         } else {
 
-            if (\Idno\Core\site()->session()->isLoggedOn()) {
+            if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
                 echo $this->draw('entity/annotations/comment/mini');
             }
 

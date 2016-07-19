@@ -22,15 +22,15 @@
             {
 
                 if (isset($this->cache[$key])) {
-                    if (\Idno\Core\site()->config()->debug) {
-                        error_log("Loading $key");
+                    if (\Idno\Core\Idno::site()->config()->debug) {
+                        Idno\Core\Idno::site()->logging->debug("Loading $key");
                     }
 
                     return $this->cache[$key];
                 }
 
-                if (\Idno\Core\site()->config()->debug) {
-                    error_log("$key not cached");
+                if (\Idno\Core\Idno::site()->config()->debug) {
+                    Idno\Core\Idno::site()->logging->debug("$key not cached");
                 }
 
                 return false;
@@ -43,8 +43,8 @@
 
             public function store($key, $value)
             {
-                if (\Idno\Core\site()->config()->debug)
-                    error_log("Caching $key");
+                if (\Idno\Core\Idno::site()->config()->debug)
+                    Idno\Core\Idno::site()->logging->debug("Caching $key");
 
                 $this->cache[$key] = $value;
 

@@ -11,15 +11,16 @@
 
                 foreach ($vars['contentTypes'] as $contentType) {
                     /* @var Idno\Common\ContentType $contentType */
+                    $entityType = $contentType->camelCase($contentType->getEntityClassName());
                     ?>
 
                     <a class="contentTypeButton" id="<?= $contentType->getClassSelector() ?>Button"
                        href="<?= $contentType->getEditURL() ?>"
-                       onclick="contentCreateForm('<?= $contentType->camelCase($contentType->getEntityClassName()) ?>'); return false;">
+                       onclick="event.preventDefault(); contentCreateForm('<?= $entityType ?>', '<?= $contentType->getEditURL() ?>'); return false;">
                         <span class="contentTypeLogo"><?= $contentType->getIcon() ?></span>
-                        
+
                     </a>
-                    
+
                     <!--<?= $contentType->getTitle() ?>-->
 
                 <?php
@@ -27,7 +28,7 @@
                 }
 
             ?>
-            <br clear="all" style="line-height: 0em"/>
+            <br class="clearall" style="line-height: 0em"/>
         </div>
     <?php
 

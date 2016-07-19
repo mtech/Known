@@ -16,38 +16,58 @@
 
             http_response_code(500);
 
-            $error_message = "Fatal Error: {$error['file']}:{$error['line']} - \"{$error['message']}\", on page {$_SERVER['SERVER_NAME']}{$_SERVER['REQUEST_URI']}";
+            if (!empty($_SERVER['SERVER_NAME'])) {
+                $server_name = $_SERVER['SERVER_NAME'];
+            } else {
+                $server_name = '';
+            }
+            if (!empty($_SERVER['REQUEST_URI'])) {
+                $request_uri = $_SERVER['REQUEST_URI'];
+            } else {
+                $request_uri = '';
+            }
+
+            $error_message = "Fatal Error: {$error['file']}:{$error['line']} - \"{$error['message']}\", on page {$server_name}{$request_uri}";
 
             echo "<h1>Oh no! Known experienced a problem!</h1>";
             echo "<p>Known experienced a problem with this page and couldn't continue. The technical details are as follows:</p>";
             echo "<pre>$error_message</pre>";
-            echo "<p>If you like, you can <a href=\"mailto:hello@withknown.com?subject=" .
-                rawurlencode("Fatal error in Known install at {$_SERVER['SERVER_NAME']}{$_SERVER['REQUEST_URI']}") . "&body=" . rawurlencode($error_message) . "\">email us for more information</a>.";
 
-            \Idno\Core\site()->logging->log($error_message, LOGLEVEL_ERROR);
+            if (file_exists(dirname(dirname(__FILE__)) . '/support.inc')) {
+                include dirname(dirname(__FILE__)) . '/support.inc';
+            } else {
+                echo '<p>If you continue to have problems, <a href="https://withknown.com/opensource" target="_blank">open source users have a number of resources available</a></p>.';
+            }
+
+            if (isset(\Idno\Core\Idno::site()->logging) && \Idno\Core\Idno::site()->logging)
+                \Idno\Core\Idno::site()->logging->error($error_message);
+            else
+                error_log($error_message);
 
             exit;
         }
     });
 
 // This is a good time to see if we're running in a subdirectory
-    if (!empty($_SERVER['PHP_SELF'])) {
-        if ($subdir = dirname($_SERVER['PHP_SELF'])) {
-            if ($subdir != DIRECTORY_SEPARATOR) {
-                if(substr($subdir, -1) == DIRECTORY_SEPARATOR) {
-                    $subdir = substr($subdir, 0, -1);
+    if (!defined('KNOWN_UNIT_TEST')) {
+        if (!empty($_SERVER['PHP_SELF'])) {
+            if ($subdir = dirname($_SERVER['PHP_SELF'])) {
+                if ($subdir != DIRECTORY_SEPARATOR) {
+                    if (substr($subdir, -1) == DIRECTORY_SEPARATOR) {
+                        $subdir = substr($subdir, 0, -1);
+                    }
+                    if (substr($subdir, 0, 1) == DIRECTORY_SEPARATOR) {
+                        $subdir = substr($subdir, 1);
+                    }
+                    $subdir = str_replace(DIRECTORY_SEPARATOR, '/', $subdir);
+                    define('KNOWN_SUBDIRECTORY', $subdir);
                 }
-                if (substr($subdir, 0, 1) == DIRECTORY_SEPARATOR) {
-                    $subdir = substr($subdir, 1);
-                }
-                $subdir = str_replace(DIRECTORY_SEPARATOR, '/', $subdir);
-                define('KNOWN_SUBDIRECTORY', $subdir);
             }
         }
     }
 
 // Set time limit if we're using less
-    if (ini_get('max_execution_time') < 120) {
+    if (ini_get('max_execution_time') < 120 && ini_get('safe_mode')) {
         set_time_limit(120);
     }
 
@@ -63,6 +83,7 @@
     function &loader()
     {
         global $known_loader;
+
         return $known_loader;
     }
 
@@ -91,6 +112,9 @@
 // Symfony is used for routing, observer design pattern support, and a bunch of other fun stuff
     $known_loader->registerNamespace('Symfony\Component', dirname(dirname(__FILE__)) . '/external');
 
+// Implement the PSR-3 logging interface
+    $known_loader->registerNamespace('Psr\Log', dirname(dirname(__FILE__)) . '/external/log');
+
 // Using Toro for URL routing
     require_once(dirname(dirname(__FILE__)) . '/external/torophp/src/Toro.php');
 
@@ -99,9 +123,13 @@
     $known_loader->registerNamespace('webignition\AbsoluteUrlDeriver', dirname(dirname(__FILE__)) . '/external/webignition/absolute-url-deriver/src');
     $known_loader->registerNamespace('webignition\NormalisedUrl', dirname(dirname(__FILE__)) . '/external/webignition/url/src');
     $known_loader->registerNamespace('Mf2', dirname(dirname(__FILE__)) . '/external/mf2');
+    $known_loader->registerNamespace('IndieWeb', dirname(dirname(__FILE__)) . '/external/mention-client-php/src');
 
 // Using Simplepie for RSS and Atom parsing
     include dirname(dirname(__FILE__)) . '/external/simplepie/autoloader.php';
+
+// Using HTMLPurifier for HTML sanitization
+    include dirname(dirname(__FILE__)) . '/external/htmlpurifier-lite/library/HTMLPurifier.auto.php';
 
 // Register the autoloader
     $known_loader->register();

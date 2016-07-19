@@ -8,8 +8,8 @@
     $has_liked = false;
     if ($like_annotations = $vars['object']->getAnnotations('like')) {
         foreach ($like_annotations as $like) {
-            if (\Idno\Core\site()->session()->isLoggedOn()) {
-                if ($like['owner_url'] == \Idno\Core\site()->session()->currentUser()->getDisplayURL()) {
+            if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
+                if ($like['owner_url'] == \Idno\Core\Idno::site()->session()->currentUser()->getDisplayURL()) {
                     $has_liked = true;
                 }
             }
@@ -25,7 +25,7 @@
             <p>
                 <a href="<?= $owner->getDisplayURL() ?>"><?= htmlentities(strip_tags($owner->getTitle()), ENT_QUOTES, 'UTF-8') ?></a>published this
                 <a class="u-url url" href="<?= $vars['object']->getDisplayURL() ?>" rel="permalink"><time class="dt-published"
-                          datetime="<?= date('c', $vars['object']->created) ?>"><?= date('c', $vars['object']->created) ?></time></a>
+                          datetime="<?= date(DATE_ISO8601, $vars['object']->created) ?>"><?= strftime('%d %b %Y', $vars['object']->created) ?></time></a>
                 <?php
 
                     if ($vars['object']->access != 'PUBLIC') {
@@ -37,7 +37,7 @@
                 <?= $this->draw('content/end/links') ?>
                 <?php
 
-                    if (\Idno\Core\site()->currentPage()->isPermalink() && \Idno\Core\site()->config()->indieweb_citation) {
+                    if (\Idno\Core\Idno::site()->currentPage()->isPermalink() && \Idno\Core\Idno::site()->config()->indieweb_citation) {
 
                         ?>
                         <span class="citation"><?= $vars['object']->getCitation() ?></span>
@@ -62,8 +62,8 @@
                     $heart_text = $likes . ' stars';
                 }
                 $heart = $heart_only . ' ' . $heart_text;
-                if (\Idno\Core\site()->session()->isLoggedOn()) {
-					echo \Idno\Core\site()->actions()->createLink(\Idno\Core\site()->config()->getDisplayURL() . 'annotation/post', $heart_only, ['type' => 'like', 'object' => $vars['object']->getUUID()], ['method' => 'POST', 'class' => 'stars']);
+                if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
+					echo \Idno\Core\Idno::site()->actions()->createLink(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'annotation/post', $heart_only, ['type' => 'like', 'object' => $vars['object']->getUUID()], ['method' => 'POST', 'class' => 'stars']);
             ?>
            <a class="stars" href="<?= $vars['object']->getDisplayURL() ?>#comments"><?= $heart_text ?></a></span>
         <?php
@@ -90,10 +90,10 @@
                     echo '<i class="fa fa-calendar-o"></i>' . $rsvps;
                 } ?></a>
         </div>
-        <br clear="all"/>
+        <br class="clearall"/>
         <?php
 
-        if (\Idno\Core\site()->currentPage()->isPermalink()) {
+        if (\Idno\Core\Idno::site()->currentPage()->isPermalink()) {
 
             if (!empty($likes) || !empty($replies) || !empty($shares) || !empty($rsvps) || !empty($mentions)) {
 
@@ -137,7 +137,13 @@
 
         } else {
 
-            if (\Idno\Core\site()->session()->isLoggedOn()) {
+            ?>
+            <div class="extra-metadata">
+                <?=$this->draw('content/syndication/links')?>
+            </div>
+            <?php
+
+            if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
                 echo $this->draw('entity/annotations/comment/mini');
             }
 

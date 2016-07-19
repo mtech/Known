@@ -13,21 +13,18 @@ a {
     box-shadow: none;
     border: none;
 }
-li {
-    line-height: 1.8em !important;
-}
-/*.entry-content .p-name a,*/
+/*.idno-body .p-name a,*/
 .idno-entry h2 {
     font-size: 1.8em;
     margin: 0; padding: 0;
 }
-.entry-content blockquote {
+.idno-body blockquote {
     margin-top: 2em;
     margin-bottom: 2em;
     font-size: 0.9em;
     color: #444;
 }
-.idno-statusupdates .entry-content p {
+.idno-statusupdates .idno-body p {
     font-size: 1.8em;
     margin: 0; padding: 0;
 }
@@ -98,8 +95,8 @@ blockquote {
 
 .navbar-nav > li > .nav > li > a {
     color: #fff;
-    padding-bottom: 13px;
-    padding-top: 13px;
+    /*padding-bottom: 13px;
+    padding-top: 13px;*/
 }
 
 .navbar .nav .dropdown-toggle .caret {
@@ -113,4 +110,7 @@ blockquote {
 }
 .navbar-default .navbar-toggle {
     border-color: transparent;
+}
+.navbar-nav > li > .dropdown-menu, .navbar-right .dropdown-menu {
+    margin-top: 6px;
 }

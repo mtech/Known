@@ -28,10 +28,10 @@
 
         <div class="col-md-6 col-md-offset-1">
         <?php if ($vars['facebook_enabled']) { ?>
-            <form action="https://www.brid.gy/facebook/start?feature=listen&callback=<?=urlencode(\Idno\Core\site()->config()->getDisplayURL() . 'account/bridgy/')?>" method="post">
-            <input type="hidden" name="feature" value="listen"></input>
-            <input type="hidden" name="key" value="<?=$vars['facebook_key']?>"></input>
-            <input type="hidden" name="callback" value="<?=\Idno\Core\site()->config()->getDisplayURL() . 'account/bridgy/disabled/?service=facebook'?>">
+            <form action="https://www.brid.gy/delete/start" method="post">
+            <input type="hidden" name="feature" value="listen" />
+            <input type="hidden" name="key" value="<?=$vars['facebook_key']?>" />
+            <input type="hidden" name="callback" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/bridgy/disabled/?service=facebook'?>" />
             <p>
                 <button class="connect fb connected">Facebook + Bridgy connected</button>
             </p>
@@ -41,8 +41,9 @@
         </form>
         <?php } else { ?>
         <form action="https://www.brid.gy/facebook/start" method="post">
-            <input type="hidden" name="feature" value="listen"></input>
-            <input type="hidden" name="callback" value="<?=\Idno\Core\site()->config()->getDisplayURL() . 'account/bridgy/enabled/?service=facebook'?>">
+            <input type="hidden" name="feature" value="listen" />
+            <input type="hidden" name="callback" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/bridgy/enabled/?service=facebook'?>" />
+            <input type="hidden" name="user_url" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>" />
             <p>
                 <button class="connect fb">
                 Activate Facebook + Bridgy</button>
@@ -55,9 +56,9 @@
 
         <?php if ($vars['twitter_enabled']) { ?>
         <form action="https://www.brid.gy/delete/start" method="post">
-            <input type="hidden" name="feature" value="listen"></input>
-            <input type="hidden" name="key" value="<?=$vars['twitter_key']?>"></input>
-            <input type="hidden" name="callback" value="<?=\Idno\Core\site()->config()->getDisplayURL() . 'account/bridgy/disabled/?service=twitter'?>">
+            <input type="hidden" name="feature" value="listen" />
+            <input type="hidden" name="key" value="<?=$vars['twitter_key']?>" />
+            <input type="hidden" name="callback" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/bridgy/disabled/?service=twitter'?>" />
             <p>
                 <button class="connect fb connected">Twitter + Bridgy connected</button>
             </p>
@@ -67,8 +68,9 @@
         </form>
         <?php } else { ?>
         <form action="https://www.brid.gy/twitter/start" method="post">
-            <input type="hidden" name="feature" value="listen"></input>
-            <input type="hidden" name="callback" value="<?=\Idno\Core\site()->config()->getDisplayURL() . 'account/bridgy/enabled/?service=twitter'?>">
+            <input type="hidden" name="feature" value="listen" />
+            <input type="hidden" name="callback" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/bridgy/enabled/?service=twitter'?>" />
+            <input type="hidden" name="user_url" value="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>" />
             <p>
                 <button class="connect tw">
                 Activate Twitter + Bridgy</button>
@@ -87,7 +89,7 @@
 $(function(){
     function refreshAccountArea() {
         $.get(
-            "<?=\Idno\Core\site()->config()->getDisplayURL().'account/bridgy/'?>",
+            "<?=\Idno\Core\Idno::site()->config()->getDisplayURL().'account/bridgy/'?>",
             function(page) {
                 // swap out the account area with the re-rendered area
                 $('#account-area').replaceWith(
@@ -97,7 +99,7 @@ $(function(){
 
     // check whether the account statuses have changed
     $.get(
-        "<?=\Idno\Core\site()->config()->getDisplayURL().'account/bridgy/check/'?>",
+        "<?=\Idno\Core\Idno::site()->config()->getDisplayURL().'account/bridgy/check/'?>",
         function(data) {
             if (data.changed) {
                 refreshAccountArea();

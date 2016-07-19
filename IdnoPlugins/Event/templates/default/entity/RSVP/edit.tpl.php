@@ -35,14 +35,14 @@
             <div class="content-form">
                 <label for="body">
                     Any comments?</label>
-                    <textarea name="body" id="body" value="<?=htmlspecialchars($vars['object']->body)?>" class="form-control event" /></textarea>
+                    <textarea name="body" id="body" class="form-control event" /><?=htmlspecialchars($vars['object']->body)?></textarea>
             </div>
             <?=$this->draw('entity/tags/input');?>
-            <?php if (empty($vars['object']->_id)) { ?><input type="hidden" name="forward-to" value="<?= \Idno\Core\site()->config()->getDisplayURL() . 'content/all/'; ?>" /><?php } ?>
-            <?php if (empty($vars['object']->_id)) echo $this->drawSyndication('note'); ?>
+            <?php if (empty($vars['object']->_id)) { ?><input type="hidden" name="forward-to" value="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'content/all/'; ?>" /><?php } ?>
+            <?php echo $this->drawSyndication('note', $vars['object']->getPosseLinks()); ?>
             <?= $this->draw('content/access'); ?>
             <p class="button-bar">
-                <?= \Idno\Core\site()->actions()->signForm('/status/edit') ?>
+                <?= \Idno\Core\Idno::site()->actions()->signForm('/status/edit') ?>
                 <input type="button" class="btn btn-cancel" value="Cancel" onclick="hideContentCreateForm();" />
                 <input type="submit" class="btn btn-primary" value="Save" />
 

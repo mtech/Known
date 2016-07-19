@@ -2,7 +2,6 @@
 
     namespace Idno\Core {
 
-        use Idno\Entities\ActivityStreamPost;
         use Idno\Entities\User;
 
         class HelperRobot extends \Idno\Common\Component
@@ -10,19 +9,20 @@
 
             static $changed_state = 0;
 
-            function registerPages() {
+            function registerPages()
+            {
                 site()->addPageHandler('/robot/remove/?', 'Idno\Pages\Robot\Remove');
             }
 
             function registerEventHooks()
             {
 
-                \Idno\Core\site()->addEventHook('saved', function (\Idno\Core\Event $event) {
+                \Idno\Core\Idno::site()->addEventHook('saved', function (\Idno\Core\Event $event) {
 
                     $eventdata = $event->data();
                     if ($object = $eventdata['object']) {
                         if (site()->session()->isLoggedOn()) {
-                            if (!($object instanceof User) && !($object instanceof ActivityStreamPost)) {
+                            if (!($object instanceof User)) {
                                 if (!empty(site()->session()->currentUser()->robot_state)) {
                                     $user = site()->session()->currentUser();
                                     switch ($user->robot_state) {

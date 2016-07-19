@@ -1,7 +1,11 @@
 <?php
 
     if (file_exists('../config.ini')) {
-        header('Location: ../'); exit;
+        if ($config = @parse_ini_file('../config.ini')) {
+            if (!empty($config)) {
+                header('Location: ../'); exit;
+            }
+        }
     }
 
     if (empty($title)) {

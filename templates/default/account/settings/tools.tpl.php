@@ -1,5 +1,5 @@
 <?php
-    $user = \Idno\Core\site()->session()->currentUser();
+    $user = \Idno\Core\Idno::site()->session()->currentUser();
 ?>
 <div class="row">
 
@@ -27,7 +27,7 @@
         </div>
 	<div class="col-md-4 col-md-offset-1">
 		<p>
-			<img src="<?= \Idno\Core\site()->config()->getDisplayURL() ?>gfx/other/bookmarklet-mouse.png" alt="bookmarklet-mouse" class="img-responsive" />
+			<img src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>gfx/other/bookmarklet-mouse.png" alt="bookmarklet-mouse" class="img-responsive" />
 		</p>
         </div>
 </div>
@@ -35,7 +35,7 @@
 
 <div class="row">
 	<div class="col-md-4 col-md-offset-1">
-		<img src="<?= \Idno\Core\site()->config()->getDisplayURL() ?>gfx/other/bookmarklet.png" alt="bookmarklet" class="img-responsive"  />
+		<img src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>gfx/other/bookmarklet.png" alt="bookmarklet" class="img-responsive"  />
 	</div>
 	<div class="col-md-4 col-md-offset-1">
         <p>
@@ -61,8 +61,12 @@
 
         <h2>API</h2>
         <p>
+            <form id="apikey_form"><?= $t->__(['action' => '/account/settings/tools/'])->draw('forms/token')?>
             Your API key: <input type="text" id="apikey" class="span4" name="apikey"
-                                 value="Click to show" readonly>
+                                 value="Click to show" readonly></form> <?php
+                                 if (!empty($user->apikey)) {
+                                     echo \Idno\Core\Idno::site()->actions()->createLink(\Idno\Core\Idno::site()->currentPage()->currentUrl(), 'Revoke', array('_method' => 'revoke'), array('method' => 'POST', 'class' => 'btn btn-danger', 'confirm' => true, 'confirm-text' => 'Revoking this key will mean you must update any applications that use this key!'));
+                                 } ?>
         </p>
 
     </div>
@@ -73,10 +77,12 @@
         $('#apikey').click(function() {
             var ctrl = $(this);
             
-            $.ajax('<?= \Idno\Core\site()->currentPage()->currentUrl(); ?>', {
+            $.ajax('<?= \Idno\Core\Idno::site()->currentPage()->currentUrl(); ?>', {
                 dataType: 'json',
+                data: $('#apikey_form').serialize(),
                 success: function(data) {
                     ctrl.val(data);
+                    $('#apikey-revoke').fadeIn();
                 }
             })
         });

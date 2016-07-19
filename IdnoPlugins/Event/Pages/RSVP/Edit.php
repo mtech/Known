@@ -15,7 +15,11 @@
                     $object = new \IdnoPlugins\Event\RSVP();
                 }
 
-                $t = \Idno\Core\site()->template();
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
                 $body = $t->__(array(
                     'object' => $object,
                     'url' => $this->getInput('url')
@@ -45,7 +49,7 @@
                     $object = new \IdnoPlugins\Event\RSVP();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     $this->forward($object->getDisplayURL());
                 }
 

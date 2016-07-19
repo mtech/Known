@@ -15,12 +15,24 @@
                     $object = \IdnoPlugins\Event\Event::getByID($this->arguments[0]);
                 } else {
                     $object = new \IdnoPlugins\Event\Event();
+                    $autosave = new \Idno\Core\Autosave();
+                    foreach (array(
+                        'title', 'summary', 'location', 'starttime', 'endtime', 'body'
+                    ) as $field) {
+                        $object->$field = $autosave->getValue('event', $field);
+                    }
                 }
 
-                $t = \Idno\Core\site()->template();
-                $body = $t->__(array(
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
+                $edit_body = $t->__(array(
                     'object' => $object
                 ))->draw('entity/Event/edit');
+
+                $body = $t->__(['body' => $edit_body])->draw('entity/editwrapper');
 
                 if (empty($object)) {
                     $title = 'Write an event';
@@ -46,7 +58,7 @@
                     $object = new \IdnoPlugins\Event\Event();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     (new \Idno\Core\Autosave())->clearContext('event');
                     $forward = $this->getInput('forward-to', $object->getDisplayURL());
                     $this->forward($forward);

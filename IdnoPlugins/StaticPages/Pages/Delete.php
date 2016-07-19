@@ -2,9 +2,11 @@
 
     namespace IdnoPlugins\StaticPages\Pages {
 
-        class Delete extends \Idno\Common\Page {
+        class Delete extends \Idno\Common\Page
+        {
 
-            function getContent() {
+            function getContent()
+            {
 
                 $this->createGatekeeper();    // This functionality is for logged-in users only
 
@@ -16,7 +18,7 @@
                     $this->forward();
                 }
 
-                $t = \Idno\Core\site()->template();
+                $t    = \Idno\Core\Idno::site()->template();
                 $body = $t->__(array(
                     'object' => $object
                 ))->draw('entity/StaticPages/delete');
@@ -28,7 +30,8 @@
                 }
             }
 
-            function postContent() {
+            function postContent()
+            {
                 $this->createGatekeeper();
 
                 if (!empty($this->arguments)) {
@@ -37,14 +40,14 @@
                 if (empty($object)) $this->forward();
                 if (!$object->canEdit()) {
                     $this->setResponse(403);
-                    \Idno\Core\site()->session()->addMessage("You don't have permission to perform this task.");
+                    \Idno\Core\Idno::site()->session()->addMessage("You don't have permission to perform this task.");
                     $this->forward();
                 }
 
                 if ($object->delete()) {
-                    \Idno\Core\site()->session()->addMessage('Your page was deleted.');
+                    \Idno\Core\Idno::site()->session()->addMessage('Your page was deleted.');
                 } else {
-                    \Idno\Core\site()->session()->addMessage("We couldn't delete " . $object->getTitle() . ".");
+                    \Idno\Core\Idno::site()->session()->addMessage("We couldn't delete " . $object->getTitle() . ".");
                 }
                 $this->forward($_SERVER['HTTP_REFERER']);
             }

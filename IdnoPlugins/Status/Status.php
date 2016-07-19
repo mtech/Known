@@ -2,52 +2,58 @@
 
     namespace IdnoPlugins\Status {
 
-        class Status extends \Idno\Common\Entity {
-            
-            /** 
+        class Status extends \Idno\Common\Entity
+        {
+
+            /**
              * Create an appropriate status class.
              * Returns an appropriate new class, either a Status or a Reply, depending on whether it is in reply to something.
              * @return Status|Reply
              */
-            public static function factory() {
-                $inreplyto = \Idno\Core\site()->currentPage()->getInput('inreplyto');
-                $body = \Idno\Core\site()->currentPage()->getInput('body');
-                
+            public static function factory()
+            {
+                $inreplyto = \Idno\Core\Idno::site()->currentPage()->getInput('inreplyto');
+                $body      = \Idno\Core\Idno::site()->currentPage()->getInput('body');
+
                 if (!empty($inreplyto)) {
                     return new Reply();
                 }
-                
+
                 if ($body[0] == '@') {
                     return new Reply();
                 }
-                
+
                 return new Status();
             }
 
-            function getTitle() {
+            function getTitle()
+            {
                 $title = trim($this->getShortDescription());
                 if (empty($title)) {
                     $title = 'Status update';
                 }
+
                 return $title;
             }
 
-            function getDescription() {
+            function getDescription()
+            {
                 $body = $this->body;
                 if (!empty($this->inreplyto)) {
                     if (is_array($this->inreplyto)) {
-                        foreach($this->inreplyto as $inreplyto) {
-                            $body = '<a href="'.$inreplyto.'" class="u-in-reply-to"></a>' . $body;
+                        foreach ($this->inreplyto as $inreplyto) {
+                            $body = '<a href="' . $inreplyto . '" class="u-in-reply-to"></a>' . $body;
                         }
                     } else {
-                        $body = '<a href="'.$this->inreplyto.'" class="u-in-reply-to"></a>' . $body;
+                        $body = '<a href="' . $this->inreplyto . '" class="u-in-reply-to"></a>' . $body;
                     }
                 }
                 if (!empty($this->syndicatedto)) {
-                    foreach($this->syndicatedto as $syndicated) {
-                        $body = '<a href="'.$syndicated.'" class="u-in-reply-to"></a>' . $body;
+                    foreach ($this->syndicatedto as $syndicated) {
+                        $body = '<a href="' . $syndicated . '" class="u-in-reply-to"></a>' . $body;
                     }
                 }
+
                 return $body;
             }
 
@@ -55,7 +61,8 @@
              * Status objects have type 'note'
              * @return 'note'
              */
-            function getActivityStreamsObjectType() {
+            function getActivityStreamsObjectType()
+            {
                 return 'note';
             }
 
@@ -63,31 +70,33 @@
              * Saves changes to this object based on user input
              * @return true|false
              */
-            function saveDataFromInput() {
+            function saveDataFromInput()
+            {
 
                 if (empty($this->_id)) {
                     $new = true;
                 } else {
                     $new = false;
                 }
-                $body = \Idno\Core\site()->currentPage()->getInput('body');
-                $inreplyto = \Idno\Core\site()->currentPage()->getInput('inreplyto');
-                $tags = \Idno\Core\site()->currentPage()->getInput('tags');
-                $access = \Idno\Core\site()->currentPage()->getInput('access');
+                $body      = \Idno\Core\Idno::site()->currentPage()->getInput('body');
+                $inreplyto = \Idno\Core\Idno::site()->currentPage()->getInput('inreplyto');
+                $tags      = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
+                $access    = \Idno\Core\Idno::site()->currentPage()->getInput('access');
 
-                if ($time = \Idno\Core\site()->currentPage()->getInput('created')) {
+                if ($time = \Idno\Core\Idno::site()->currentPage()->getInput('created')) {
                     if ($time = strtotime($time)) {
                         $this->created = $time;
                     }
                 }
 
                 if (!empty($body)) {
-                    $this->body = $body;
+                    $this->body      = $body;
                     $this->inreplyto = $inreplyto;
-                    $this->tags = $tags;
+                    $this->tags      = $tags;
+                    // TODO fetch syndicated reply targets asynchronously (or maybe on-demand, when syndicating?)
                     if (!empty($inreplyto)) {
                         if (is_array($inreplyto)) {
-                            foreach($inreplyto as $inreplytourl) {
+                            foreach ($inreplyto as $inreplytourl) {
                                 $this->syndicatedto = \Idno\Core\Webmention::addSyndicatedReplyTargets($inreplytourl, $this->syndicatedto);
                             }
                         } else {
@@ -95,19 +104,30 @@
                         }
                     }
                     $this->setAccess($access);
-                    if ($this->save($new)) {
-                        \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\site()->template()->parseURLs($this->getDescription()));
+                    if ($this->publish($new)) {
+
+                        if ($this->getAccess() == 'PUBLIC') {
+                            \Idno\Core\Idno::site()->queue()->enqueue('default', 'webmention/sendall', [
+                                'source' => $this->getURL(),
+                                'text' => \Idno\Core\Idno::site()->template()->parseURLs($this->getDescription()),
+                            ]);
+                        }
+
                         return true;
                     }
                 } else {
-                    \Idno\Core\site()->session()->addErrorMessage('You can\'t save an empty status update.');
+                    \Idno\Core\Idno::site()->session()->addErrorMessage('You can\'t save an empty status update.');
                 }
+
                 return false;
 
             }
 
-            function deleteData() {
-                \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\site()->template()->parseURLs($this->getDescription()));
+            function deleteData()
+            {
+                if ($this->getAccess() == 'PUBLIC') {
+                    \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getDescription()));
+                }
             }
 
         }

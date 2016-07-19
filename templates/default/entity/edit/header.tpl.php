@@ -1,6 +1,6 @@
 <?php
 
-    if ($page = \Idno\Core\site()->currentPage()) {
+    if ($page = \Idno\Core\Idno::site()->currentPage()) {
         if ($page->getInput('sharing')) {
 
             $share_type = $page->getInput('share_type');
@@ -11,11 +11,14 @@
 ?>
 
             <div class="row">
-                <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-8 col-md-offset-2">
                     <ul class="nav nav-tabs">
                         <?php
 
-                            foreach(array('note' => 'Share', 'reply' => 'Reply', 'bookmark' => 'Bookmark', 'like' => 'Like', 'rsvp' => 'RSVP') as $variable => $label) {
+                            $postTypes = array('note' => 'Share', 'reply' => 'Reply', 'bookmark' => 'Bookmark', 'rsvp' => 'RSVP');
+                            $postTypes = \Idno\Core\Idno::site()->triggerEvent('share/types', ['types' => $postTypes], $postTypes);
+
+                            foreach($postTypes as $variable => $label) {
 
                                 if ($content_type = \Idno\Common\ContentType::getRegisteredForIndieWebPostType($variable)) {
 

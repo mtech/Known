@@ -18,9 +18,6 @@
     $mysql_pass  = getInput('mysql_pass');
     $mysql_name  = getInput('mysql_name');
     $upload_path = getInput('upload_path');
-    if (empty($mysql_host)) {
-        $mysql_host = 'localhost';
-    }
 
     if (!empty($_SERVER['PHP_SELF'])) {
         if ($subdir = dirname(dirname($_SERVER['PHP_SELF']))) {
@@ -43,10 +40,26 @@
 
     if (!empty($mysql_name) && !empty($mysql_host)) {
         try {
-            $dbh = new PDO('mysql:host=' . $mysql_host . ';dbname=' . $mysql_name, $mysql_user, $mysql_pass);
-            if ($schema = @file_get_contents('../schemas/mysql/mysql.sql')) {
+            $database_string = 'mysql:';
+            if (!empty($mysql_host)) {
+                $database_string .= 'host=' . $mysql_host . ';';
+            }
+            $database_string .= 'dbname=' . $mysql_name;
+            $dbh = new PDO($database_string, $mysql_user, $mysql_pass);
+            if ($schema = @file_get_contents(dirname(dirname(__FILE__)) . '/schemas/mysql/mysql.sql')) {
                 $dbh->exec('use `' . $mysql_name . '`');
-                $dbh->exec($schema);
+                if (!$dbh->exec($schema)) {
+                    $err = $dbh->errorInfo();
+                    if ($err[0] === '00000') {
+                        // exec() might return false (no rows affected) and still have been successful
+                        // http://php.net/manual/en/pdo.exec.php#118156
+                    } else if ($err[0] === '01000') {
+                        $messages .= '<p>Installed database schema with warnings: '.$err[2].'.</p>';
+                    } else {
+                        $messages .= '<p>We couldn\'t automatically install the database schema: '.$err[2].'</p>';
+                        $ok = false;
+                    }
+                }
             } else {
                 $messages .= '<p>We couldn\'t find the schema doc.</p>';
                 $ok = false;
@@ -79,15 +92,20 @@
             $messages .= 'which prevents Known\'s .htaccess from doing its thing. We tried to fetch a URL that should redirect ';
             $messages .= 'to default.js, but got this response instead:</p>';
             $messages .= '<code><pre>' . htmlspecialchars($curl_result) . '</pre></code>';
+            $messages .= '<p>You can usually fix this by setting <code>AllowOverride All</code> in your Apache configuration.</p>';
             $ok = false;
         }
 
         curl_close($curl_handle);
     }
 
-    if (file_exists('../config.ini') && $ok) {
-        header('Location: ../begin/register?set_name=' . urlencode($site_title));
-        exit;
+    if ($ok) {
+        if (file_exists('../config.ini')) {
+            if ($config = @parse_ini_file('../config.ini')) {
+                header('Location: ../begin/register?set_name=' . urlencode($site_title));
+                exit;
+            }
+        }
     }
 
     if (!empty($upload_path)) {
@@ -118,7 +136,7 @@
         }
     }
 
-    if ($ok = true && !empty($upload_path) && !empty($mysql_name) && !empty($mysql_host)) {
+    if ($ok && !empty($upload_path) && !empty($mysql_name) && !empty($mysql_host)) {
         $ini_file = <<< END
 
 # This configuration file was created by Known's installer.
@@ -145,7 +163,7 @@ END;
             if ($fp = @fopen('../config.ini', 'w')) {
                 fwrite($fp, $ini_file);
                 fclose($fp);
-                header('Location: ../begin/register');
+                header('Location: ../begin/register?set_name='.urlencode($site_title));
                 exit;
             } else {
                 include 'writeconfig.php';
@@ -187,8 +205,7 @@ END;
                 </p>
                 <p>
                     On this screen, we'll ask you how we should connect to your database, and where we should save
-                    uploaded files
-                    like user photos, pictures and audio.
+                    uploaded files like user photos, pictures and audio.
                 </p>
             <?php
 

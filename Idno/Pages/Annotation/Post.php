@@ -5,6 +5,7 @@
      */
 
     namespace Idno\Pages\Annotation {
+
         use Idno\Common\Entity;
 
         /**
@@ -29,7 +30,7 @@
                 $body        = $this->getInput('body');
                 $object_uuid = $this->getInput('object');
                 $type        = $this->getInput('type');
-                $user        = \Idno\Core\site()->session()->currentUser();
+                $user        = \Idno\Core\Idno::site()->session()->currentUser();
                 if ($type != 'like') {
                     $type = 'reply';
                 }
@@ -40,7 +41,7 @@
                     if ($type == 'like') {
                         if ($like_annotations = $object->getAnnotations('like')) {
                             foreach ($like_annotations as $like) {
-                                if ($like['owner_url'] == \Idno\Core\site()->session()->currentUser()->getURL()) {
+                                if ($like['owner_url'] == \Idno\Core\Idno::site()->session()->currentUser()->getURL()) {
                                     $object->removeAnnotation($like['permalink']);
                                     $object->save();
                                     $has_liked = true;
@@ -54,7 +55,7 @@
                             $object->save();
                         }
                     }
-                    $this->forward($object->getURL() . '#comments');
+                    $this->forward($object->getDisplayURL() . '#comments');
                 }
 
             }

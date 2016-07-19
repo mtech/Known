@@ -18,11 +18,17 @@
                     $object->pageTitle = ($object->getTitleFromURL($this->getInput('url')));
                 }
 
-                $t = \Idno\Core\site()->template();
-                $body = $t->__(array(
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                $t = \Idno\Core\Idno::site()->template();
+                $edit_body = $t->__(array(
                     'object' => $object,
                     'url' => $this->getInput('url')
                 ))->draw('entity/Like/edit');
+
+                $body = $t->__(['body' => $edit_body])->draw('entity/editwrapper');
 
                 if (!empty($this->xhr)) {
                     echo $body;
@@ -42,7 +48,7 @@
                     $object = new \IdnoPlugins\Like\Like();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     $forward = $this->getInput('forward-to', $object->getDisplayURL());
                     $this->forward($forward);
                 }

@@ -14,7 +14,7 @@
 
             function getContent()
             {
-                $t = \Idno\Core\site()->template();
+                $t = \Idno\Core\Idno::site()->template();
                 $t->__(array('title' => 'Webmention endpoint', 'body' => $t->draw('pages/webmention')))->drawPage();
             }
 
@@ -26,9 +26,10 @@
                 // Check that both source and target are non-empty
                 if (!empty($vars['source']) && !empty($vars['target']) && $vars['source'] != $vars['target']) {
 
-                    // Sanitize source and target
-                    $source = urldecode($vars['source']);
-                    $target = urldecode($vars['target']);
+                    $source = $vars['source'];
+                    $target = $vars['target'];
+
+                    \Idno\Core\Idno::site()->logging()->debug("received webmention from $source to $target");
 
                     // Remove anchors from target URL, but save them to '#' input so we can still reference them later
                     if (strpos($target, '#')) {
@@ -38,41 +39,49 @@
                         }
                     }
 
+                    // If the target is a bare domain with no path, add /
+                    $route = $target;
+                    if (!parse_url($route, PHP_URL_PATH)) {
+                        $route .= '/';
+                    }
+
                     // Get the page handler for target
-                    if ($page = \Idno\Core\site()->getPageHandler($target)) {
+                    if ($page = \Idno\Core\Idno::site()->getPageHandler($route)) {
                         // First of all, make sure the target page isn't the source page. Let's not webmention ourselves!
                         $webmention_ok = true;
                         if (\Idno\Common\Entity::isLocalUUID($source)) {
-                            if ($source_page = \Idno\Core\site()->getPageHandler($source)) {
+                            if ($source_page = \Idno\Core\Idno::site()->getPageHandler($source)) {
                                 if ($source_page == $page) {
                                     $webmention_ok = false;
                                 }
                             }
                         }
+
                         // Check that source exists, parse it for mf2 content,
                         // and ensure that it genuinely mentions this page
                         if ($webmention_ok) {
-                            if ($source_content = \Idno\Core\Webservice::get($source)) {
-                                if (substr_count($source_content['content'], $target) || $source_content['response'] == 410) {
-                                    $source_mf2 = \Idno\Core\Webmention::parseContent($source_content['content'], $source);
+                            \Idno\Core\Idno::site()->logging()->debug("webmention is ok with target page " . get_class($page));
+                            if ($source_response = \Idno\Core\Webservice::get($source)) {
+                                if (substr_count($source_response['content'], $target) || $source_response['response'] == 410) {
+                                    $source_mf2 = \Idno\Core\Webmention::parseContent($source_response['content'], $source);
                                     // Set source and target information as input variables
                                     $page->setPermalink();
-                                    if ($page->webmentionContent($source, $target, $source_content, $source_mf2)) {
+                                    if ($page->webmentionContent($source, $target, $source_response, $source_mf2)) {
                                         $this->setResponse(202); // Webmention received a-ok.
                                         exit;
                                     } else {
-                                        $error      = 'target_not_supported';
-                                        $error_text = 'This is not webmentionable.';
+                                        $error      = 'source_not_supported';
+                                        $error_text = 'Could not interpret source as a comment.';
                                     }
                                 } else {
                                     $error      = 'no_link_found';
                                     $error_text = 'The source URI does not contain a link to the target URI.';
-                                    \Idno\Core\site()->logging->log('No link from ' . $source . ' to ' . $target, LOGLEVEL_ERROR);
+                                    \Idno\Core\Idno::site()->logging->warning('No link from ' . $source . ' to ' . $target);
                                 }
                             } else {
                                 $error      = 'source_not_found';
                                 $error_text = 'The source content for ' . $source . ' could not be obtained.';
-                                \Idno\Core\site()->logging->log('No content from ' . $source, LOGLEVEL_ERROR);
+                                \Idno\Core\Idno::site()->logging->warning('No content from '.$source);
                             }
                         } else {
                             $error      = 'target_not_supported';
@@ -81,10 +90,14 @@
                     } else {
                         $error      = 'target_not_found';
                         $error_text = 'The target page ' . $target . ' does not exist.';
-                        \Idno\Core\site()->logging()->log('Could not find handler for ' . $target, LOGLEVEL_ERROR);
+                        \Idno\Core\Idno::site()->logging()->error('Could not find handler for ' . $target);
                     }
                 }
                 $this->setResponse(400); // Webmention failed.
+                if (empty($error)) {
+                    $error      = 'unknown_error';
+                    $error_text = 'Not all the required webmention variables were set.';
+                }
                 echo json_encode(array('error' => $error, 'error_text' => $error_text));
             }
 

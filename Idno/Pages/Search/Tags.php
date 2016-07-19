@@ -15,14 +15,15 @@
             {
 
                 if (!empty($this->arguments[0])) {
-                    $tag  = urldecode($this->arguments[0]);
-                    $page = new Homepage();
+                    $tag             = urldecode($this->arguments[0]);
+                    $page            = new Homepage();
+                    $page->arguments = ['all'];
                     $page->setInput('q', '#' . $tag);
                     $page->getContent();
                     exit;
                 }
 
-                $this->forward(\Idno\Core\site()->config()->getDisplayURL());
+                $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL());
 
             }
 

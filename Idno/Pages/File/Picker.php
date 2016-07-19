@@ -6,39 +6,51 @@
 
     namespace Idno\Pages\File {
 
+        use Idno\Core\Idno;
+
         class Picker extends \Idno\Common\Page
         {
 
             function getContent()
             {
-                $type = $this->getInput('type');
-                if (in_array($type, ['image'])) {
-                    $template = 'file/picker/' . $type;
-                } else {
-                    $template = 'file/picker';
-                }
 
-                $t          = \Idno\Core\site()->template();
-                $t->title   = 'File picker';
+                $template   = 'file/picker/image';
+                $t          = \Idno\Core\Idno::site()->template();
+                $t->title   = 'Image picker';
                 $t->hidenav = true;
                 $t->body    = $t->draw($template);
-                echo $t->draw('shell');
+                $t->drawPage();
             }
 
             function post()
             {
-                if (\Idno\Core\site()->session()->isLoggedOn()) {
+                if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
                     if (!empty($_FILES['file']['tmp_name'])) {
-                        if (!\Idno\Core\site()->triggerEvent("file/upload", [], true)) {
+                        if (!\Idno\Core\Idno::site()->triggerEvent("file/upload", [], true)) {
                             exit;
                         }
-                        if ($file = \Idno\Entities\File::createFromFile($_FILES['file']['tmp_name'], $_FILES['file']['name'], $_FILES['file']['type'], true)) {
-                            $t       = \Idno\Core\site()->template();
-                            $t->file = $file;
-                            echo $t->draw('file/picker/donejs');
-                            exit;
+                        if (\Idno\Entities\File::isImage($_FILES['file']['tmp_name'])) {
+                            $return = false;
+                            $file   = false;
+                            if ($file = \Idno\Entities\File::createThumbnailFromFile($_FILES['file']['tmp_name'], $_FILES['file']['name'], 1024)) {
+                                $return           = true;
+                                $returnfile       = new \stdClass;
+                                $returnfile->file = ['_id' => $file];
+                                $file             = $returnfile;
+                            } else if ($file = \Idno\Entities\File::createFromFile($_FILES['file']['tmp_name'], $_FILES['file']['name'], $_FILES['file']['type'], true)) {
+                                $return = true;
+                            }
+                            if ($return) {
+                                $t       = \Idno\Core\Idno::site()->template();
+                                $t->file = $file;
+                                echo $t->draw('file/picker/donejs');
+                                exit;
+                            }
+                        } else {
+                            Idno::site()->session()->addErrorMessage("You can only upload images.");
                         }
                     }
+                    $this->forward($_SERVER['HTTP_REDIRECT']);
                 }
             }
 

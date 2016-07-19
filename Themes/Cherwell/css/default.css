@@ -26,12 +26,12 @@ blockquote {
     background-color: rgba(255,255,255,1.0);
 }
 
-.e-content p {
+.idno-body p {
     font-family: Helvetica,Arial,sans-serif;
     font-size: 1em;
 }
 
-.idno-object .e-content li {
+.idno-object .idno-body li {
     font-family: Helvetica,Arial,sans-serif;
     font-size: 0.9em;
     line-height: 1.5em;
@@ -97,7 +97,7 @@ blockquote {
     font-weight: lighter;
 }
 
-.idno-statusupdates .entry-content {
+.idno-statusupdates .idno-body {
     font-size: 1.3em;
 }
 
@@ -159,10 +159,8 @@ body.page-share {
 .result-404, .result-403, .result-410, .result-500,
 .page-begin-publish .page-container .page-body,
 .idno_pages_user_edit .page-container .page-body, .page-pages .page-container .page-body,
-.no-content, .generic-page,
+.no-content, .generic-page, .page-directory .page-container .page-body,
 .page-admin .page-container .page-body, .page-account .page-container .page-body {
-    /*background-color: rgba(255,255,255,0.7);*/
-    /*background-color: rgba(0,0,0,0.7);*/
     background-color:#ffffff;
     color: #333;
     /*border-radius: 15px; */

@@ -10,19 +10,27 @@
         Also on:
         <?php
 
-            foreach ($posse as $service => $posse_link) {
-
-                $human_icon = $this->draw('content/syndication/icon/' . $service);
-                if (empty($human_icon)) {
-                    $human_icon = $this->draw('content/syndication/icon/generic');
+            foreach ($posse as $service => $posse_links) {
+                if (is_string($posse_links)) {
+                    $posse_links = [['url' => $posse_links, 'identifier' => $service]];
                 }
 
-                if (is_array($posse_link)) {
-                    foreach($posse_link as $element) {
-                        echo '<a href="' . $element['url'] . '" rel="syndication" class="u-syndication ' . $service . '">' . $human_icon . ' ' . $element['identifier'] . '</a> ';
+                foreach($posse_links as $element) {
+                    $human_icon = $this->__([
+                        'username' => isset($element['account_id']) ? $element['account_id'] : false,
+                        'details'  => $element,
+                    ])->draw('content/syndication/icon/' . $service);
+
+                    if (empty($human_icon)) {
+                        $human_icon = $this->draw('content/syndication/icon/generic');
                     }
-                } else {
-                    echo '<a href="' . $posse_link . '" rel="syndication" class="u-syndication ' . $service . '">' . $human_icon . ' ' . $service . '</a> ';
+
+                    $rel_syndication = '';
+                    if (\Idno\Core\Idno::site()->currentPage()->isPermalink()) {
+                        $rel_syndication = ' rel="syndication"';
+                    }
+
+                    echo "<a href=\"{$element['url']}\"$rel_syndication class=\"u-syndication $service\">$human_icon {$element['identifier']}</a>";
                 }
             }
 

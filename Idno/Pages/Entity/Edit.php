@@ -22,15 +22,20 @@
                 if (empty($object)) $this->forward(); // TODO: 404
                 if (!$object->canEdit()) $this->forward($object->getDisplayURL());
 
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
                 session_write_close();
 
-                $t = \Idno\Core\site()->template();
+                $t = \Idno\Core\Idno::site()->template();
                 $t->__(array(
 
                     'title' => $object->getTitle(),
-                    'body'  => $object->drawEdit()
+                    'body'        => $t->__(['object' => $object])->draw('entity/editwrapper'),
 
                 ))->drawPage();
+
             }
 
         }

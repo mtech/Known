@@ -26,6 +26,9 @@
             // We can also extend templates with HTML or other content
             public $rendered_extensions = array();
 
+            // Keep track of the HTML purifier
+            public $purifier = false;
+
             /**
              * On construction, detect the template type
              */
@@ -34,6 +37,11 @@
                 if (!($template instanceof Template)) {
                     $this->detectTemplateType();
                 }
+
+                assert('\Idno\Core\Idno::site()->config()->site_secret /* Site secret not set */');
+                \Bonita\Main::siteSecret(\Idno\Core\Idno::site()->config()->site_secret);
+
+                $this->purifier = new Purifier();
 
                 return parent::__construct($template);
             }
@@ -54,18 +62,31 @@
                         $result .= parent::draw($template, $returnBlank);
                     }
                 }
-                if (!empty($this->replacements[$templateName]) && $replacements == true) {
-                    $result .= parent::draw($this->replacements[$templateName], $returnBlank);
-                } else {
-                    $result .= parent::draw($templateName, $returnBlank);
-                }
-                if (!empty($this->extensions[$templateName])) {
-                    foreach ($this->extensions[$templateName] as $template) {
-                        $result .= parent::draw($template, $returnBlank);
+                $replaced = false;
+                foreach(['*', $this->getTemplateType()] as $templateType) {
+                    if (!empty($this->replacements[$templateName][$templateType]) && $replacements == true) {
+                        $result .= parent::draw($this->replacements[$templateName][$templateType], $returnBlank);
+                        $replaced = true;
                     }
+                    if (!empty($this->extensions[$templateName][$templateType])) {
+                        foreach ($this->extensions[$templateName][$templateType] as $template) {
+                            $result .= parent::draw($template, $returnBlank);
+                        }
+                    }
+                }
+                if (!$replaced) {
+                    $result .= parent::draw($templateName, $returnBlank);
                 }
                 if (!empty($this->rendered_extensions[$templateName])) {
                     $result .= $this->rendered_extensions[$templateName];
+                }
+
+                if ($templateName == 'shell' && !empty(Idno::site()->config()->filter_shell)) {
+                    if (is_array(Idno::site()->config()->filter_shell)) {
+                        foreach(Idno::site()->config()->filter_shell as $search => $replace) {
+                            $result = str_replace($search, $replace, $result);
+                        }
+                    }
                 }
 
                 if (!empty($result)) return $result;
@@ -95,11 +116,14 @@
             /**
              * Draw syndication buttons relating to a particular content type
              * @param $content_type
+             * @param $posse_links containing Entity::getPosseLinks()
              * @return \Bonita\false|string
              */
-            function drawSyndication($content_type)
+            function drawSyndication($content_type, $posse_links = [])
             {
-                return $this->__(array('services' => \Idno\Core\site()->syndication()->getServices($content_type), 'content_type' => $content_type))->draw('content/syndication');
+                return $this->__(array('services'     => \Idno\Core\Idno::site()->syndication()->getServices($content_type),
+                                       'content_type' => $content_type,
+                                       'posseLinks'   => $posse_links))->draw('content/syndication');
             }
 
             /**
@@ -111,8 +135,8 @@
             function drawPagination($count, $items_per_page = null)
             {
 
-                if ($items_per_page == null) $items_per_page = \Idno\Core\site()->config()->items_per_page;
-                $page   = \Idno\Core\site()->currentPage();
+                if ($items_per_page == null) $items_per_page = \Idno\Core\Idno::site()->config()->items_per_page;
+                $page   = \Idno\Core\Idno::site()->currentPage();
                 $offset = (int)$page->getInput('offset');
                 if ($offset == 0 && $count < $items_per_page) {
                     return '';
@@ -132,15 +156,15 @@
              * @param string $extensionTemplateName
              * @param bool $to_front If set, this will add the template to the beginning of the template queue
              */
-            function extendTemplate($templateName, $extensionTemplateName, $to_front = false)
+            function extendTemplate($templateName, $extensionTemplateName, $to_front = false, $templateType = '*')
             {
-                if (empty($this->extensions[$templateName])) {
-                    $this->extensions[$templateName] = array();
+                if (empty($this->extensions[$templateName][$templateType])) {
+                    $this->extensions[$templateName][$templateType] = array();
                 }
                 if ($to_front) {
-                    array_unshift($this->extensions[$templateName], $extensionTemplateName);
+                    array_unshift($this->extensions[$templateName][$templateType], $extensionTemplateName);
                 } else {
-                    $this->extensions[$templateName][] = $extensionTemplateName;
+                    $this->extensions[$templateName][$templateType][] = $extensionTemplateName;
                 }
             }
 
@@ -176,14 +200,13 @@
              *
              * @param string $templateName
              * @param string $extensionTemplateName
-             * @param bool $to_front If set, this will add the template to the beginning of the template queue
              */
-            function replaceTemplate($templateName, $replacementTemplateName)
+            function replaceTemplate($templateName, $replacementTemplateName, $templateType = '*')
             {
-                if (empty($this->replacements[$templateName])) {
-                    $this->replacements[$templateName] = array();
+                if (empty($this->replacements[$templateName][$templateType])) {
+                    $this->replacements[$templateName][$templateType] = array();
                 }
-                $this->replacements[$templateName] = $replacementTemplateName;
+                $this->replacements[$templateName][$templateType] = $replacementTemplateName;
             }
 
             /**
@@ -212,17 +235,7 @@
                 require_once dirname(dirname(dirname(__FILE__))) . '/external/MrClay_AutoP/AutoP.php';
                 $autop = new \MrClay_AutoP();
 
-                return $this->sanitize_html($autop->process($html));
-            }
-
-            /**
-             * Sanitize HTML in a large block of text, removing XSS and other vulnerabilities.
-             * This works by calling the text/filter event, note that currently there is no native implementation.
-             * @param type $html
-             */
-            function sanitize_html($html)
-            {
-                return site()->triggerEvent('text/filter', [], $html);
+                return $autop->process($html);
             }
 
             /**
@@ -236,6 +249,18 @@
             }
 
             /**
+             * Sanitize HTML in a large block of text, removing XSS and other vulnerabilities.
+             * This works by calling the text/filter event, as well as any built-in purifier.
+             * @param type $html
+             */
+            function sanitize_html($html)
+            {
+                $html = site()->triggerEvent('text/filter', [], $html);
+
+                return $html;
+            }
+
+            /**
              * Automatically links URLs embedded in a piece of text
              * @param stirng $text
              * @param string $code Optionally, code to inject into the anchor tag (eg to add classes). '%URL%' is replaced with the URL. Default: blank.
@@ -243,22 +268,34 @@
              */
             function parseURLs($text, $code = '')
             {
-                $r = preg_replace_callback('/(?<!=)(?<!["\'])((ht|f)tps?:\/\/[^\s\r\n\t<>"\'\(\)]+)/i',
-                    create_function(
-                        '$matches',
-                        '
-                            $url = $matches[1];
-                            $punc = \'\';
-                            $last = substr($url, -1, 1);
-                            if (in_array($last, array(".", "!", ","))) {
-                                $punc = $last;
-                                $url = rtrim($url, ".!,");
-                            }
-                            $urltext = str_replace("/", "/<wbr />", $url);
-                            $code = str_replace("%URL%",$url,"' . addslashes($code) . '");
-                        return "<a href=\"{$url}\" {$code}>{$urltext}</a>{$punc}";
-                    '
-                    ), $text);
+                $r = preg_replace_callback('/(?<!=)(?<!["\'])((ht|f)tps?:\/\/[^\s<>"\']+)/i', function ($matches) use ($code) {
+                    $url  = $matches[1];
+                    $punc = '';
+
+                    while ($url) {
+                        $last = substr($url, -1, 1);
+                        if (strstr('.!?,;:(', $last)
+                            // strip ) if there isn't a matching ( earlier in the url
+                            || ($last === ')' && !strstr($url, '('))
+                        ) {
+                            $punc = $last . $punc;
+                            $url  = substr($url, 0, -1);
+                        } else {
+                            break; // found a non-punctuation character
+                        }
+                    }
+
+                    $result = "<a href=\"$url\"";
+                    if ($code) {
+                        $result .= ' ' . str_replace("%URL%", $url, addslashes($code));
+                    }
+                    $result .= ">";
+                    $result .= str_replace('/', '/<wbr />', $url);
+                    $result .= "</a>$punc";
+
+                    return $result;
+
+                }, $text);
 
                 return $r;
             }
@@ -271,15 +308,19 @@
             function parseHashtags($text)
             {
                 $text = (html_entity_decode($text));
-                $r    = preg_replace_callback('/(?<=^|[\>\s\n])(\#[\p{L}0-9]+)/u', function ($matches) {
+                $r    = preg_replace_callback('/(?<=^|[\>\s\n])(\#[\p{L}0-9\_]+)/u', function ($matches) {
                     $url = $matches[1];
                     $tag = str_replace('#', '', $matches[1]);
 
-                    if (preg_match('/\#[A-Fa-f0-9]{6}/', $matches[1])) {
+                    if (preg_match('/\#[0-9]{1,3}$/', $matches[1])) {
                         return $matches[1];
                     }
 
-                    return '<a href="' . \Idno\Core\site()->config()->getDisplayURL() . 'tag/' . urlencode($tag) . '" class="p-category" rel="tag">' . $url . '</a>';
+                    if (preg_match('/\#[A-Fa-f0-9]{6}$/', $matches[1])) {
+                        return $matches[1];
+                    }
+
+                    return '<a href="' . \Idno\Core\Idno::site()->config()->getDisplayURL() . 'tag/' . urlencode($tag) . '" class="p-category" rel="tag">' . $url . '</a>';
                 }, $text);
 
                 return $r;
@@ -294,14 +335,31 @@
             function sampleParagraph($html_text, $paras = 1)
             {
                 $sample = '';
-                $dom = new \DOMDocument;
+                $dom    = new \DOMDocument;
                 $dom->loadHTML($html_text);
                 if ($p = $dom->getElementsByTagName('p')) {
                     for ($i = 0; $i < $paras; $i++) {
                         $sample .= $p->item($i)->textContent;
                     }
                 }
+
                 return $sample;
+            }
+
+            /**
+             * Returns a snippet of plain text
+             * @param $text
+             * @param int $words
+             * @return array|string
+             */
+            function sampleText($text, $words = 32)
+            {
+                $formatted_text = trim(strip_tags($text));
+                $formatted_text = explode(' ', $formatted_text);
+                $formatted_text = array_slice($formatted_text, 0, $words);
+                $formatted_text = implode(' ', $formatted_text);
+                if (strlen($formatted_text) < strlen($text)) $formatted_text .= ' ...';
+                return $formatted_text;
             }
 
             /**
@@ -320,7 +378,11 @@
                     substr($url, 0, 4) == 'sms:' ||
                     substr($url, 0, 6) == 'skype:' ||
                     substr($url, 0, 5) == 'xmpp:' ||
-                    substr($url, 0, 5) == 'facetime:'
+                    substr($url, 0, 4) == 'sip:' ||
+                    substr($url, 0, 4) == 'ssh:' ||
+                    substr($url, 0, 8) == 'spotify:' ||
+                    substr($url, 0, 8) == 'bitcoin:' ||
+                    substr($url, 0, 9) == 'facetime:'
                 )
                     ? $url
                     : 'http://' . $url;
@@ -330,12 +392,16 @@
              * Return a schema-less version of the given URL
              *
              * @param $url
+             * @param $match_host If set to true (default), only changes the URI if the host matches the site's host
              * @return mixed
              */
-            function makeDisplayURL($url)
+            function makeDisplayURL($url, $match_host = true)
             {
+                if (Idno::site()->config()->host != parse_url($url, PHP_URL_HOST) && $match_host == true) {
+                    return $url;
+                }
                 $scheme = parse_url($url, PHP_URL_SCHEME);
-                if (site()->isSecure()) {
+                if (\Idno\Core\Idno::site()->isSecure()) {
                     $newuri = 'https:';
                 } else {
                     $newuri = 'http:';
@@ -364,12 +430,15 @@
                         if (is_array($in_reply_to))
                             $in_reply_to = $in_reply_to[0];
 
-                        $r = preg_replace_callback('/(?<=^|[\>\s\n])(\@[\w0-9\_]+)/i', function ($matches) use ($in_reply_to) {
+                        $r = preg_replace_callback('/(?<=^|[\>\s\n\.])(\@[\w0-9\_]+)/i', function ($matches) use ($in_reply_to) {
                             $url = $matches[1];
 
                             // Find and replace twitter
                             if (strpos($in_reply_to, 'twitter.com') !== false) {
                                 return '<a href="https://twitter.com/' . urlencode(ltrim($matches[1], '@')) . '" >' . $url . '</a>';
+                            // Activate github
+                            } else if (strpos($in_reply_to, 'github.com') !== false) {
+                                return '<a href="https://github.com/' . urlencode(ltrim($matches[1], '@')) . '" >' . $url . '</a>';
                             } else {
                                 return $url;
                             }
@@ -385,7 +454,7 @@
                         $username = ltrim($matches[1], '@');
 
                         if ($user = User::getByHandle($username)) {
-                            return '<a href="' . \Idno\Core\site()->config()->url . 'profile/' . urlencode($username) . '" >' . $url . '</a>';
+                            return '<a href="' . \Idno\Core\Idno::site()->config()->url . 'profile/' . urlencode($username) . '" >' . $url . '</a>';
                         } else {
                             return $url;
                         }
@@ -394,15 +463,6 @@
                 }
 
                 return $r;
-            }
-
-            /**
-             * Returns a sanitized version of the current page URL
-             * @return string
-             */
-            function getCurrentURL()
-            {
-                return \Idno\Core\site()->config()->url . substr($_SERVER['REQUEST_URI'], 1);
             }
 
             /**
@@ -423,6 +483,72 @@
             }
 
             /**
+             * Returns a sanitized version of the current page URL
+             * @return string
+             */
+            function getCurrentURL()
+            {
+                $base_url = site()->config()->getDisplayURL();
+                $path     = '';
+                if ($components = parse_url($base_url)) {
+                    if ($components['path'] != '/') {
+                        $path = substr($components['path'], 1);
+                    }
+                }
+                $request_uri = substr($_SERVER['REQUEST_URI'], 1);
+                if (!empty($path)) {
+                    if (substr($request_uri, 0, strlen($path)) == $path) {
+                        $request_uri = substr($request_uri, strlen($path));
+                    }
+                }
+
+                return \Idno\Core\Idno::site()->config()->getDisplayURL() . $request_uri;
+            }
+
+            /**
+             * Returns a version of the current page URL with the specified variable removed from the address line
+             * @param string $variable_name
+             * @return string
+             */
+            function getURLWithoutVar($url, $variable_name)
+            {
+                if (empty($url)) {
+                    $url = $this->getCurrentURL();
+                }
+                $components = parse_url($url);
+                $url_var_array = [];
+                if (!empty($components['query'])) parse_str($components['query'], $url_var_array);
+                if (!empty($url_var_array[$variable_name])) unset($url_var_array[$variable_name]);
+                $components['query'] = http_build_query($url_var_array);
+                $url                 = $components['scheme'] . '://' . $components['host'] . $components['path'];
+                if (!empty($components['query'])) $url .= '?' . $components['query'];
+
+                return $url;
+            }
+
+            /**
+             * Returns a version of the current page URL with the specified URL variable set to the specified value
+             * @param $variable_name
+             * @param $value
+             * @return string
+             */
+            function getCurrentURLWithVar($variable_name, $value)
+            {
+                $components = parse_url($this->getCurrentURL());
+                if (isset($components['query'])) {
+                    parse_str($components['query'], $url_var_array);
+                } else {
+                    $url_var_array = [];
+                }
+                $url_var_array[$variable_name] = $value;
+                $components['query']           = http_build_query($url_var_array);
+                $url                           = $components['scheme'] . '://' . $components['host'] . $components['path'];
+                if (!empty($components['query'])) $url .= '?' . $components['query'];
+
+                return $url;
+            }
+
+            /**
              * Returns a version of the current page URL with the specified variable added to the address line
              * @param string $variable_name
              * @param string $variable_value
@@ -432,6 +558,11 @@
             {
                 if (empty($url)) {
                     $url = $this->getCurrentURL();
+                }
+                $blank_scheme = false;
+                if (substr($url, 0, 2) == '//') {
+                    $blank_scheme = true;
+                    $url          = 'http:' . $url;
                 }
                 if ($components = parse_url($url)) {
                     if (!empty($components['query'])) {
@@ -443,9 +574,77 @@
                     $components['query']           = http_build_query($url_var_array);
                     $url                           = $components['scheme'] . '://' . $components['host'] . $components['path'];
                     if (!empty($components['query'])) $url .= '?' . $components['query'];
+                    if ($blank_scheme) {
+                        $url = str_replace($components['scheme'] . ':', '', $url);
+                    }
                 }
 
                 return $url;
+            }
+
+            /**
+             * Retrieves a set of contextual body classes suitable for including in a shell template
+             * @return string
+             */
+            function getBodyClasses()
+            {
+                $classes = '';
+                $classes .= (str_replace('\\', '_', strtolower(get_class(\Idno\Core\Idno::site()->currentPage()))));
+                if ($path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) {
+                    if ($path = explode('/', $path)) {
+                        $page_class = '';
+                        foreach ($path as $element) {
+                            if (!empty($element)) {
+                                if (!empty($page_class)) {
+                                    $page_class .= '-';
+                                }
+                                $page_class .= $element;
+                                $classes .= ' page-' . $page_class;
+                            }
+                        }
+                    }
+                }
+                if (\Idno\Core\Idno::site()->session()->isLoggedIn()) {
+                    $classes .= ' logged-in';
+                } else {
+                    $classes .= ' logged-out';
+                }
+
+                return $classes;
+            }
+
+            /**
+             * Returns a version of this template with variable defaults set up for the shell
+             * @param $vars
+             * @return \Bonita\Templates
+             */
+            function formatShellVariables($vars)
+            {
+                // Get instance of current page for use further down the page
+                if ($vars['currentPage'] = \Idno\Core\Idno::site()->currentPage()) {
+                    $vars['pageOwner'] = $vars['currentPage']->getOwner();
+                }
+
+                if (!empty($currentPage)) {
+                    $vars['hidenav'] = \Idno\Core\Idno::site()->embedded();
+                }
+
+                $vars['description'] = isset($vars['description']) ? $vars['description'] : '';
+
+                if (empty($vars['title']) && !empty($vars['description'])) {
+                    $vars['title'] = implode(' ', array_slice(explode(' ', strip_tags($vars['description'])), 0, 10));
+                }
+
+                // Use appropriate language
+                $vars['lang'] = 'en';
+                if (!empty(\Idno\Core\Idno::site()->config()->lang)) {
+                    $vars['lang'] = \Idno\Core\Idno::site()->config()->lang;
+                }
+
+                if (empty($vars['title'])) $vars['title'] = '';
+                if (empty($vars['body'])) $vars['body'] = '';
+
+                return $this->__($vars);
             }
 
             /**

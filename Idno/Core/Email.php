@@ -11,10 +11,10 @@
             {
                 // Using SwiftMailer to establish a message
                 try {
-                    require_once site()->config()->path . '/external/swiftmailer/lib/swift_required.php';
+                    require_once \Idno\Core\Idno::site()->config()->path . '/external/swiftmailer/lib/swift_required.php';
                     $this->message = \Swift_Message::newInstance();
                 } catch (\Exception $e) {
-                    site()->session()->addErrorMessage("Something went wrong and we couldn't create the email message to send.");
+                    \Idno\Core\Idno::site()->session()->addErrorMessage("Something went wrong and we couldn't create the email message to send.");
                 }
             }
 
@@ -83,6 +83,21 @@
             }
 
             /**
+             * Given the name of a template and a set of variables to include, generates an HTML body and adds it to the message
+             * @param $template_name
+             * @param array $vars
+             * @return mixed
+             */
+            function setHTMLBodyFromTemplate($template_name, $vars = array())
+            {
+                $t = clone \Idno\Core\Idno::site()->template();
+                $t->setTemplateType('email');
+                $body = $t->__($vars)->draw($template_name);
+
+                return $this->setHTMLBody($body);
+            }
+
+            /**
              * Sets the HTML body of the message (optionally setting it inside the email pageshell as defined by the email template)
              * @param $body The formatted HTML body text of the message
              * @param bool $shell Should the message be placed inside the pageshell? Default: true
@@ -91,7 +106,7 @@
             function setHTMLBody($body, $shell = true)
             {
                 if ($shell) {
-                    $t = clone site()->template();
+                    $t = clone \Idno\Core\Idno::site()->template();
                     $t->setTemplateType('email');
                     $message = $t->__(array('body' => $body))->draw('shell');
                 } else {
@@ -102,21 +117,6 @@
             }
 
             /**
-             * Given the name of a template and a set of variables to include, generates an HTML body and adds it to the message
-             * @param $template_name
-             * @param array $vars
-             * @return mixed
-             */
-            function setHTMLBodyFromTemplate($template_name, $vars = array())
-            {
-                $t = clone site()->template();
-                $t->setTemplateType('email');
-                $body = $t->__($vars)->draw($template_name);
-
-                return $this->setHTMLBody($body);
-            }
-            
-            /**
              * Set the text only component of an email.
              * @param type $template_name
              * @param type $vars
@@ -124,7 +124,7 @@
              */
             function setTextBodyFromTemplate($template_name, $vars = array())
             {
-                $t = clone site()->template();
+                $t = clone \Idno\Core\Idno::site()->template();
                 $t->setTemplateType('email-text');
                 $body = $t->__($vars)->draw($template_name);
 
@@ -148,22 +148,22 @@
             function send()
             {
                 try {
-                    if ($smtp_host = site()->config()->smtp_host) {
+                    if ($smtp_host = \Idno\Core\Idno::site()->config()->smtp_host) {
                         $transport = \Swift_SmtpTransport::newInstance($smtp_host);
-                        if ($smtp_username = site()->config()->smtp_username) {
+                        if ($smtp_username = \Idno\Core\Idno::site()->config()->smtp_username) {
                             $transport->setUsername($smtp_username);
-                            if ($smtp_password = site()->config()->smtp_password) {
+                            if ($smtp_password = \Idno\Core\Idno::site()->config()->smtp_password) {
                                 $transport->setPassword($smtp_password);
                             }
                         }
                     } else {
                         $transport = \Swift_SmtpTransport::newInstance();
                     }
-                    if (!empty(site()->config()->smtp_port)) {
-                        $transport->setPort(site()->config()->smtp_port);
+                    if (!empty (\Idno\Core\Idno::site()->config()->smtp_port)) {
+                        $transport->setPort(\Idno\Core\Idno::site()->config()->smtp_port);
                     }
-                    if (!empty(site()->config()->smtp_secure)) {
-                        switch (site()->config()->smtp_secure) {
+                    if (!empty (\Idno\Core\Idno::site()->config()->smtp_secure)) {
+                        switch (\Idno\Core\Idno::site()->config()->smtp_secure) {
                             case 'tls':
                                 $transport->setEncryption('tls');
                                 break;
@@ -175,15 +175,15 @@
                     $mailer = \Swift_Mailer::newInstance($transport);
 
                     // Set the "from" address
-                    if ($from_email = site()->config()->from_email) {
-                        $this->message->setFrom($from_email, site()->config()->title);
+                    if ($from_email = \Idno\Core\Idno::site()->config()->from_email) {
+                        $this->message->setFrom($from_email, \Idno\Core\Idno::site()->config()->title);
                     }
 
-                    return $mailer->send(site()->triggerEvent('email/send', ['email' => $this], $this->message));
+                    return $mailer->send(\Idno\Core\Idno::site()->triggerEvent('email/send', ['email' => $this], $this->message));
 
                 } catch (\Exception $e) {
                     // Lets log errors rather than silently drop them
-                    \Idno\Core\site()->logging()->log($e->getMessage(), LOGLEVEL_ERROR);
+                    \Idno\Core\Idno::site()->logging()->error('Error sending mail', ['error' => $e]);
                 }
 
                 return 0;

@@ -11,15 +11,16 @@
 
                 foreach ($vars['contentTypes'] as $contentType) {
                     /* @var Idno\Common\ContentType $contentType */
+                    $entityType = $contentType->camelCase($contentType->getEntityClassName());
                     ?>
 
                     <a class="contentTypeButton" id="<?= $contentType->getClassSelector() ?>Button"
                        href="<?= $contentType->getEditURL() ?>"
-                       onclick="contentCreateForm('<?= $contentType->camelCase($contentType->getEntityClassName()) ?>'); return false;">
+                       onclick="event.preventDefault(); contentCreateForm('<?= $entityType ?>', '<?= $contentType->getEditURL() ?>'); return false;">
                         <span class="contentTypeLogo"><?= $contentType->getIcon() ?></span>
-                        
+
                     </a>
-                    
+
                     <!--<?= $contentType->getTitle() ?>-->
 
                 <?php
@@ -27,7 +28,7 @@
                 }
 
             ?>
-            <br clear="all" style="line-height: 0em"/>
+            <br class="clearall" style="line-height: 0em"/>
         </div>
     <?php
 
@@ -45,8 +46,8 @@
 <?php
 
     if (empty($vars['items']) && sizeof($vars['contentTypes']) <= 1 &&
-        \Idno\Core\site()->session()->isLoggedIn() &&
-        \Idno\Core\site()->session()->currentUser()->isAdmin()) {
+        \Idno\Core\Idno::site()->session()->isLoggedIn() &&
+        \Idno\Core\Idno::site()->session()->currentUser()->isAdmin()) {
 
         ?>
         <div class="row" style="margin-top: 5em">
@@ -57,7 +58,7 @@
                     </p>
                     <p>
                         Welcome to your Known site!<br />
-                        <a href="<?=\Idno\Core\site()->config()->getDisplayURL()?>admin/">Click here to start configuring your site</a>.
+                        <a href="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>admin/">Click here to start configuring your site</a>.
                     </p>
                 </div>
             </div>

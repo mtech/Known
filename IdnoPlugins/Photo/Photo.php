@@ -2,8 +2,22 @@
 
     namespace IdnoPlugins\Photo {
 
+        use Idno\Entities\File;
+
         class Photo extends \Idno\Common\Entity
         {
+
+            // http://php.net/manual/en/features.file-upload.errors.php
+	        private static $FILE_UPLOAD_ERROR_CODES = array(
+		        UPLOAD_ERR_OK         => 'There is no error, the file uploaded with success',
+		        UPLOAD_ERR_INI_SIZE   => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+		        UPLOAD_ERR_FORM_SIZE  => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+		        UPLOAD_ERR_PARTIAL    => 'The uploaded file was only partially uploaded',
+		        UPLOAD_ERR_NO_FILE    => 'No file was uploaded',
+		        UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder',
+		        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+		        UPLOAD_ERR_EXTENSION  => 'A PHP extension stopped the file upload.',
+	        );
 
             function getTitle()
             {
@@ -37,11 +51,11 @@
 
                 // Add some thumbs
                 $object['thumbnails'] = array();
-                $sizes                = \Idno\Core\site()->events()->dispatch('photo/thumbnail/getsizes', new \Idno\Core\Event(array('sizes' => array('large' => 800, 'medium' => 400, 'small' => 200))));
+                $sizes                = \Idno\Core\Idno::site()->events()->dispatch('photo/thumbnail/getsizes', new \Idno\Core\Event(array('sizes' => array('large' => 800, 'medium' => 400, 'small' => 200))));
                 $eventdata = $sizes->data();
                 foreach ($eventdata['sizes'] as $label => $size) {
                     $varname                      = "thumbnail_{$label}";
-                    $object['thumbnails'][$label] = preg_replace('/^(https?:\/\/\/)/', \Idno\Core\site()->config()->url, $this->$varname);
+                    $object['thumbnails'][$label] = preg_replace('/^(https?:\/\/\/)/', \Idno\Core\Idno::site()->config()->url, $this->$varname);
                 }
 
                 return $object;
@@ -61,18 +75,18 @@
                 }
 
                 if ($new) {
-                    if (!\Idno\Core\site()->triggerEvent("file/upload",[],true)) {
+                    if (!\Idno\Core\Idno::site()->triggerEvent("file/upload",[],true)) {
                         return false;
                     }
                 }
 
-                $this->title = \Idno\Core\site()->currentPage()->getInput('title');
-                $this->body  = \Idno\Core\site()->currentPage()->getInput('body');
-                $this->tags  = \Idno\Core\site()->currentPage()->getInput('tags');
-                $access = \Idno\Core\site()->currentPage()->getInput('access');
+                $this->title = \Idno\Core\Idno::site()->currentPage()->getInput('title');
+                $this->body  = \Idno\Core\Idno::site()->currentPage()->getInput('body');
+                $this->tags  = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
+                $access = \Idno\Core\Idno::site()->currentPage()->getInput('access');
                 $this->setAccess($access);
 
-                if ($time = \Idno\Core\site()->currentPage()->getInput('created')) {
+                if ($time = \Idno\Core\Idno::site()->currentPage()->getInput('created')) {
                     if ($time = strtotime($time)) {
                         $this->created = $time;
                     }
@@ -81,14 +95,14 @@
                 // Get photo
                 if ($new) {
                     if (!empty($_FILES['photo']['tmp_name'])) {
-                        if (\Idno\Entities\File::isImage($_FILES['photo']['tmp_name'])) {
-                            
+                        if (\Idno\Entities\File::isImage($_FILES['photo']['tmp_name']) || \Idno\Entities\File::isSVG($_FILES['photo']['tmp_name'], $_FILES['photo']['name'])) {
+
                             // Extract exif data so we can rotate
                             if (is_callable('exif_read_data') && $_FILES['photo']['type'] == 'image/jpeg') {
                                 try {
                                     if (function_exists('exif_read_data')) {
                                         if ($exif = exif_read_data($_FILES['photo']['tmp_name'])) {
-                                            $this->exif = base64_encode(serialize($exif)); // Yes, this is rough, but exif contains binary data that can not be saved in mongo
+                                            $this->exif = base64_encode(serialize($exif)); // Yes, this is rough, but exif contains binary data that cannot be saved in mongo
                                         }
                                     }
                                 } catch (\Exception $e) {
@@ -96,13 +110,21 @@
                                 }
                             } else {
                                 $exif = false;
+
+                                if (!is_callable('exif_read_data')) {
+                                    // Admins get a no-EXIF error
+                                    if (\Idno\Core\Idno::site()->session()->isAdmin()) {
+                                        \Idno\Core\Idno::site()->logging()->log("Because your server doesn't provide EXIF support, Known can't preserve any rotation information in this image.");
+                                        //\Idno\Core\Idno::site()->session()->addErrorMessage("Because your server doesn't provide EXIF support, Known can't preserve any rotation information in this image.");
+                                    }
+                                }
                             }
-                            
+
                             if ($photo = \Idno\Entities\File::createFromFile($_FILES['photo']['tmp_name'], $_FILES['photo']['name'], $_FILES['photo']['type'], true, true)) {
                                 $this->attachFile($photo);
 
                                 // Now get some smaller thumbnails, with the option to override sizes
-                                $sizes = \Idno\Core\site()->events()->dispatch('photo/thumbnail/getsizes', new \Idno\Core\Event(array('sizes' => array('large' => 800, 'medium' => 400, 'small' => 200))));
+                                $sizes = \Idno\Core\Idno::site()->events()->dispatch('photo/thumbnail/getsizes', new \Idno\Core\Event(array('sizes' => array('large' => 800, 'medium' => 400, 'small' => 200))));
                                 $eventdata = $sizes->data();
                                 foreach ($eventdata['sizes'] as $label => $size) {
 
@@ -110,9 +132,9 @@
 
                                     // Experiment: let's not save thumbnails for GIFs, in order to enable animated GIF posting.
                                     if ($_FILES['photo']['type'] != 'image/gif') {
-                                        if ($thumbnail = \Idno\Entities\File::createThumbnailFromFile($_FILES['photo']['tmp_name'], "{$filename}_{$label}", $size, false)) {
+	                                    if ($thumbnail = \Idno\Entities\File::createThumbnailFromFile($_FILES['photo']['tmp_name'], "{$filename}_{$label}", $size, false)) {
                                             $varname        = "thumbnail_{$label}";
-                                            $this->$varname = \Idno\Core\site()->config()->url . 'file/' . $thumbnail;
+                                            $this->$varname = \Idno\Core\Idno::site()->config()->url . 'file/' . $thumbnail;
 
                                             $varname        = "thumbnail_{$label}_id";
                                             $this->$varname = substr($thumbnail, 0, strpos($thumbnail, '/'));
@@ -121,20 +143,31 @@
                                 }
 
                             } else {
-                                \Idno\Core\site()->session()->addErrorMessage('Image wasn\'t attached.');
+                                \Idno\Core\Idno::site()->session()->addErrorMessage('Image wasn\'t attached.');
+                                return false;
                             }
                         } else {
-                            \Idno\Core\site()->session()->addErrorMessage('This doesn\'t seem to be an image ..');
+                            \Idno\Core\Idno::site()->session()->addErrorMessage('This doesn\'t seem to be an image ..');
+                            return false;
                         }
                     } else {
-                        \Idno\Core\site()->session()->addErrorMessage('We couldn\'t access your image. Please try again.');
-
+	                    // http://php.net/manual/en/features.file-upload.errors.php
+	                    $errcode = $_FILES['photo']['error'];
+	                    if (!empty($errcode) && !empty(self::$FILE_UPLOAD_ERROR_CODES[intval($errcode)])) {
+		                    $errmsg = self::$FILE_UPLOAD_ERROR_CODES[intval($errcode)];
+	                    } else {
+		                    $errmsg = 'We couldn\'t access your image for an unknown reason. Please try again.';
+	                    }
+	                    \Idno\Core\Idno::site()->session()->addErrorMessage($errmsg);
                         return false;
                     }
                 }
 
-                if ($this->save($new)) {
-                    \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
+                if ($this->publish($new)) {
+
+                    if ($this->getAccess() == 'PUBLIC') {
+                        \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
+                    }
 
                     return true;
                 } else {

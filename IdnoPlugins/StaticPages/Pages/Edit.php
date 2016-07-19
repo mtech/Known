@@ -4,9 +4,11 @@
 
         use Idno\Common\Page;
 
-        class Edit extends Page {
+        class Edit extends Page
+        {
 
-            function getContent() {
+            function getContent()
+            {
 
                 $this->adminGatekeeper();
 
@@ -17,7 +19,11 @@
                     $object = new \IdnoPlugins\StaticPages\StaticPage();
                 }
 
-                if ($staticpages = \Idno\Core\site()->plugins()->get('StaticPages')) {
+                if ($owner = $object->getOwner()) {
+                    $this->setOwner($owner);
+                }
+
+                if ($staticpages = \Idno\Core\Idno::site()->plugins()->get('StaticPages')) {
 
                     $categories = $staticpages->getCategories();
                     if (!empty($object->category)) {
@@ -26,22 +32,23 @@
                         $category = $this->getInput('category');
                     }
 
-                    $body = \Idno\Core\site()->template()->__([
+                    $body = \Idno\Core\Idno::site()->template()->__([
                         'categories' => $categories,
-                        'category' => $category,
-                        'object' => $object
+                        'category'   => $category,
+                        'object'     => $object
                     ])->draw('entity/StaticPage/edit');
 
-                    \Idno\Core\site()->template()->__([
+                    \Idno\Core\Idno::site()->template()->__([
                         'title' => 'Edit page',
-                        'body' => $body
+                        'body'  => $body
                     ])->drawPage();
 
                 }
 
             }
 
-            function postContent() {
+            function postContent()
+            {
 
                 $this->adminGatekeeper();
 
@@ -52,7 +59,7 @@
                     $object = new \IdnoPlugins\StaticPages\StaticPage();
                 }
 
-                if ($object->saveDataFromInput($this)) {
+                if ($object->saveDataFromInput()) {
                     $this->forward($object->getURL());
                 } else {
                     $this->forward($_SERVER['HTTP_REFERER']);
