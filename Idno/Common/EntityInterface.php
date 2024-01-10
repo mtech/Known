@@ -6,15 +6,16 @@
      * This is designed to be implemented by anything that needs to be an
      * object in the idno system
      *
-     * @package idno
+     * @package    idno
      * @subpackage core
      */
 
-    namespace Idno\Common {
+namespace Idno\Common {
 
-        interface EntityInterface extends \JsonSerializable, \ArrayAccess
-        {
-
-        }
+    interface EntityInterface extends \JsonSerializable, \ArrayAccess, RSSSerialisable
+    {
 
     }
+
+}
+

@@ -1,6 +1,6 @@
-# Installation instructions
+# Installation Instructions
 
-##Before you begin
+## Before you begin
 
 If you’re running Known in production, we highly recommend that you download the installation package from [withknown.com](https://withknown.com).
 
@@ -8,7 +8,7 @@ To begin with, make sure your server satisfies the [System requirements](require
 
 Some of the technologies involved are a little bit new, so you may have to ask for your web host to install them specially. We want to help you pick a great host that works well with Known, so we'll be creating a list of the ones that will just work, out of the box.
 
-##Upload Known files
+## Upload Known files
 
 Known releases stable installation packages from [withknown.com](https://withknown.com) in both .zip and .tar.gz formats. If you are using Known for any purpose other than development, this is the recommended source for Known installations.
 
@@ -17,11 +17,18 @@ You can place the platform on your web host by:
 + Downloading the latest package from [the Known homepage](https://withknown.com/). This is by far the easiest option. If you’ve uploaded the files inside the archive to your web host, you can skip to the configuration section of these documents, below.
 * If you have more control over your server, you can also use Git to clone the code from [our repository](https://github.com/idno/known). Git is a technical source code management system that is out of scope for this guide, so if in doubt, use point one.
 
+!!! note "Note"
+    Known's dependencies are now retrieved by ```composer``` when downloading the project directly from GitHub. If you've installed Known from the git repo, you will need to run ```composer install``` from your Known directory.
+
+### Alternative Packages
+
+If you want to run the (almost) latest and greatest code, but aren't able to track github, you may opt to use one of the [unofficial Known installation packages](https://www.marcus-povey.co.uk/known/). These packages are built from github, and often contain newer features than in the official release.
+
 ## Configure Known
 
 ### Use the automatic installer
 
-If you’re using a MySQL back-end, you can get started by pointing your browser at your Known site address. If you want to use MongoDB (or another database backend), you’ll need to create the configuration file manually, as described below.
+If you’re using a MySQL back-end, you can get started by pointing your browser at your Known site address. If you want to use MongoDB (or another database backend), you’ll need to create the configuration file manually, as described below, or use the CLI installer.
 
 ### Use environment variables
 
@@ -35,7 +42,7 @@ If you’re using Docker or other virtualized server environments, you will need
 
 ### If you’re using MySQL
 
-Currently, MySQL users need to create a file called ```config.ini``` in the root of their installation. This should contain the following information:
+Currently, MySQL users need to create a file called ```config.ini``` in you ```/configuration/``` directory. This should contain the following information:
 
     database = "MySQL"
     dbname = "Your MySQL database name"
@@ -47,7 +54,7 @@ If you need to use a non-standard database port, you can also select this:
 
     dbport = "Your database port"
 
-Additionally, you will need to create the database referred to in this configuration file, and ensure that it can be connected to using the user credentials you supply. For now, you will need to load the SQL schema stored in /schemas/mysql/mysql.sql.
+Additionally, you will need to create the database referred to in this configuration file, and ensure that it can be connected to using the user credentials you supply. For now, you will need to load the SQL schema stored in `/warmup/schemas/mysql/mysql.sql`.
 
 ### If you’re using Postgres
 
@@ -72,7 +79,7 @@ If you’re using MongoDB, you don’t have to do anything, and all uploaded fil
 
 Create a directory where file uploads will be stored. This must be outside of your document root. Set permissions such that the web server can read and write to it. chmod 777 will work, but is insecure and not recommended.
 
-Make a note of that full path. For example, /Users/ben/Sites/withknown.com/data/.
+Make a note of that full path. For example, `/Users/ben/Sites/withknown.com/data/`.
 
 Then, add the following to your config.ini file:
 
@@ -112,6 +119,10 @@ When using authentication, your MongoDB user will need to be granted the ["readW
       {role: "readWrite", db: "idnosession"}
     ]})
 
+#### Upgrading from old mongo driver
+
+If you're upgrading from an older release (0.9.2 and below) you will need to install the new [PHP mongodb driver](https://secure.php.net/manual/en/set.mongodb.php).
+
 ### Load Known
 
 Launch Known in a web browser.
@@ -123,3 +134,7 @@ Register and log in.
 ### Administer Known
 
 Once you’ve registered and logged in, click “Administration” in the menu bar. This will allow you to set some site configuration items, including the site name. You will also be able to enable some plugins from this screen. If you’re using Known as a blog or a closed community, you will probably also want to turn open registration off from here.
+
+## Command Line Installation
+
+A command line installer is available, which is useful for installing Known over slow connections or in a scripted environment. Details can be found [here](cliinstaller.md).

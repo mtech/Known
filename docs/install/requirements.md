@@ -1,11 +1,11 @@
-# System requirements
+# System Requirements
 
 Known _requires_ the following server components:
 
 + A Web Server that supports URL rewriting (Apache + mod_rewrite recommended).
 + If you are using Apache, you also need to make sure support for .htaccess is enabled (using [the AllowOverride All directive](https://help.ubuntu.com/community/EnablingUseOfApacheHtaccessFiles)).
-+ PHP 5.5 or above.
-+ MySQL 5+, MongoDB, Postgres or SQLite3. We recommend MySQL.
++ PHP 8.1 or above.
++ MySQL 5+ / MariaDB or MongoDB. We recommend MySQL.
 
 Known can either be installed at the root of a domain or subdomain, or in a subdirectory.
 
@@ -43,12 +43,14 @@ Additionally, Known requires the following PHP components:
 + json
 + libxml
 + mbstring
-+ mongo or mysql (depending on database backend)
++ mysql (or postgresql or sqlite, depending on database backend)
 + reflection
 + session
 + xmlrpc
++ gettext
 
-Note that you may need to restart the web server after installing these components. Known’s installer will tell you if a required module isn’t available.
+!!! note "Note" 
+    You may need to restart the web server after installing these components. Known’s installer will tell you if a required module isn’t available.
 
 ## Recommendations
 

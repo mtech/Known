@@ -8,6 +8,9 @@ Upgrading Known is designed to be very simple.
 
 That's it!
 
+!!! note "GitHub users"
+    If you're using a direct checkout from GitHub (rather than using one of the prepared packages), you need to update any dependencies using ```composer update```
+
 If you are upgrading from a significantly older version of Known, or if a config.ini file no longer exists in your
 installation directory, you may need to perform the following additional steps:
 
@@ -17,3 +20,7 @@ installation directory, you may need to perform the following additional steps:
 7. Hit enter and you'll be taken to your site.
 
 Thanks to [Chris Aldich](http://stream.boffosocko.com/2015/upgrading-withknown-on-ones-own-server) for this point.
+
+!!! warning "MongoDB Users"
+    * Previous releases of Known (<0.9.5) used a now deprecated mongo driver. If you are running your site on Mongo, you will first need to make sure that you have installed the new [PHP MongoDB driver](https://secure.php.net/manual/en/set.mongodb.php).
+    * Additionally, the 0.9.9 release changed the default database engine, so you'll need to specify ```database = 'mongo'``` in your config.ini

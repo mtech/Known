@@ -49,6 +49,10 @@ specifying a minimum version of those plugins):
     plugin[] =          "Known plugin"
     plugin[] =          "Another Known plugin,0.8"
 
+
+!!! note "Note"
+    Your plugin name is the name of the plugin's main directory/namespace, e.g. ```Status``` for the status plugin.
+
 The requirements section may also define a minimum PHP version and
 Known core version.
 
@@ -56,6 +60,13 @@ Known core version.
     known =              0.9
 
 This plugin requires PHP >= 5.5 or higher and Known >= 0.9.
+
+You can also further refine the known requirements by specifying a build version.
+
+    build =   2017020301
+
+Which will specify a Known install with a machine version (build) greater than or
+equal to 2017020301.
 
 At this time, these requirements are informational only: You can still
 install a plugin whose requirements are not met, but there will be a

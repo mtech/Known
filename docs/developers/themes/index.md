@@ -68,9 +68,12 @@ To add a custom, static CSS file, you might want to `extend` the `shell/head` th
 
 You would then create a new template file in `/Themes/PDXCarpet/templates/default/pdxcarpet/shell/head.tpl.php` with some HTML to be injected into the page header::
 
-    <link href="<?= \Idno\Core\Idno::site()->config()->url ?>Themes/PDXCarpet/css/default.css" rel="stylesheet">
+    <link href="<?= \Idno\Core\Idno::site()->config()->getStaticURL() ?>Themes/PDXCarpet/css/default.css" rel="stylesheet">
 
 Finally, you'd create a normal static CSS file in `/Themes/PDXCarpet/css/default.css`.
+
+!!! note "Note"
+    While it's not required, it is recommended to create a minified version of your CSS file and link to that, e.g. ```yui-compressor default.css > default.min.css```
 
 ## Reference themes
 

@@ -1,0 +1,15 @@
+#
+# This configuration file was created by Known's installer.
+# Known version: %version% - %build%
+# Built: %datetime%
+#
+
+database = '%database%'
+dbname = '%dbname%'
+dbpass = '%dbpass%'
+dbuser = '%dbuser%'
+dbhost = '%dbhost%'
+
+filesystem = '%filesystem%'
+uploadpath = '%uploadpath%'
+

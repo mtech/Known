@@ -1,23 +1,24 @@
 <?php
 
-    namespace Idno\Core {
+namespace Idno\Core {
 
-        use Idno\Entities\User;
+    use Idno\Entities\User;
 
-        class HelperRobot extends \Idno\Common\Component
+    class HelperRobot extends \Idno\Common\Component
+    {
+
+        static $changed_state = 0;
+
+        function registerPages()
+        {
+            site()->routes()->addRoute('/robot/remove/?', 'Idno\Pages\Robot\Remove');
+        }
+
+        function registerEventHooks()
         {
 
-            static $changed_state = 0;
-
-            function registerPages()
-            {
-                site()->addPageHandler('/robot/remove/?', 'Idno\Pages\Robot\Remove');
-            }
-
-            function registerEventHooks()
-            {
-
-                \Idno\Core\Idno::site()->addEventHook('saved', function (\Idno\Core\Event $event) {
+            \Idno\Core\Idno::site()->events()->addListener(
+                'saved', function (\Idno\Core\Event $event) {
 
                     $eventdata = $event->data();
                     if ($object = $eventdata['object']) {
@@ -35,17 +36,18 @@
                                             }
                                             self::$changed_state = 1;
                                             break;
+
                                         case '2a':
                                             if (class_exists('IdnoPlugins\Photo') && $object instanceof \IdnoPlugins\Photo) {
                                                 $user->robot_state = '3a';
                                             }
                                             self::$changed_state = 1;
                                             break;
+
                                         case '2b':
                                             $user->robot_state   = '3b';
                                             self::$changed_state = 1;
                                             break;
-
                                     }
                                     $user->save();
                                     site()->session()->refreshSessionUser($user);
@@ -55,10 +57,12 @@
                         }
                     }
 
-                });
-
-            }
+                }
+            );
 
         }
 
     }
+
+}
+

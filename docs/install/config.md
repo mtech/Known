@@ -1,14 +1,17 @@
-# Using config.ini to configure Known
+# Using config.ini to Configure Known
 
-Known is configured through config.ini, a simple file that is stored in the root of your Known installation.
+Known is configured through config.ini, a simple file that is stored in the ```/configuration``` directory.
 
 Usually, config.ini is created automatically during installation. There is no need to create a config.ini file manually.
 However, sometimes you may wish to add values here.
 
 Config.ini files use the [INI file format](https://en.wikipedia.org/wiki/INI_file).
 
-You can also use yourdomain.ini: for example, if your site was stored at yourdomain.com, you could have a supplemental
-config.ini file at yourdomain.com.ini. This is most useful in combination with the **multitenant** setting.
+!!! note "Per-domain configuration"
+    You can also use ```yourdomain.ini```, in addition to ```config.ini```: for example, if your site was stored at yourdomain.com, you could have a supplemental
+    config.ini file at yourdomain.com.ini. This is most useful in combination with the **multitenant** setting. 
+
+    Per domain configuration files are loaded after ```config.ini``` is processed.
 
 ## Example config.ini file
 
@@ -48,6 +51,22 @@ If you are using MongoDB, you can leave this option blank to use GridFS storage.
 
 **uploadpath**<br>
 The full path used by Known to upload files. This path must be writeable by the web server.
+
+**smtp_host, smtp_port, smtp_username, smtp_secure, from_email**<br>
+Configuration for SMTP server.  Without these set (here or in the UI)
+it will be impossible to send password recovery emails.
+'smtp_secure' should be 'tls' or 'ssl'.
+
+**loglevel**<br>
+Log levels to show:
+* 0 - off
+* 1 - errors
+* 2 - errors & warnings
+* 3 - errors, warnings, & useful information
+* 4 - errors, warnings, useful information, & debugging output
+
+**debug**<br>
+Enable debugging output.
 
 ## Other config.ini directives
 

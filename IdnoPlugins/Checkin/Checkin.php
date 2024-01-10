@@ -1,167 +1,210 @@
 <?php
 
-    namespace IdnoPlugins\Checkin {
+namespace IdnoPlugins\Checkin {
 
-        class Checkin extends \Idno\Common\Entity
+    class Checkin extends \Idno\Common\Entity
+        implements \Idno\Common\JSONLDSerialisable
+    {
+
+        // Cache lat/long so same random result appears between calls on the same page
+        private $_lat;
+        private $_lng;
+        
+        function getTitle()
+        {
+            return \Idno\Core\Idno::site()->language()->_('Checked into %s', [
+                $this->canSeePreciseLocation() && $this->placename ? $this->placename : \Idno\Core\Idno::site()->language()->_('somewhere near...')
+            ]);
+        }
+
+        function getDescription()
+        {
+            if (empty($this->body)) {
+                return ' ';
+            }
+            return $this->body;
+        }
+
+        function getMetadataForFeed()
+        {
+            return array(
+                'type' => 'checkin',
+                'latitude' => $this->lat,
+                'longitude' => $this->long,
+                'placename' => $this->placename,
+                'address' => $this->address
+            );
+        }
+
+        /**
+         * Status objects have type 'note'
+         * @return 'note'
+         */
+        function getActivityStreamsObjectType()
+        {
+            return 'place';
+        }
+
+        function isAnonymous() : bool {
+            return $this->anonymity == 'Yes';
+        }
+        
+        /** 
+         * Reduce the precision of a lat/long dimension by rounding it off and adding some jitter.
+         * @param float $location
+         * @return float
+         */
+        protected function reducePrecision(float $location) : float {
+            
+            // Add some jitter
+            $jitter = rand(-100,100);
+            $jitter = (float)($jitter /  10000);
+            
+            return $location + $jitter;
+        }
+        
+        function canSeePreciseLocation() : bool {
+            
+            if (!$this->isAnonymous()) return true; // This isn't anonymous
+            
+            if ($this->created < time() - (60*60*24)) return true; // Or it's older than 24 hours
+            
+            if (\Idno\Core\Idno::site()->session()->currentUser()) return true; // Or we're logged in
+            
+            return false; // Otherwise we add some jitter.
+        }
+        
+        function lat() : ?float {
+            if (!empty($this->_lat)) return $this->_lat;
+            
+            if (!empty($this->lat)) {
+                
+                if ($this->canSeePreciseLocation()) {
+                    $this->_lat = $this->lat;
+                } else {
+                    $this->_lat = $this->reducePrecision($this->lat);
+                }
+                
+                return $this->lat();
+            }
+            
+            return null;
+        }
+        
+        
+        function long() : ?float {
+            
+            if (!empty($this->_lng)) return $this->_lng;
+            
+            if (!empty($this->long)) {
+                
+                if ($this->canSeePreciseLocation()) {
+                    $this->_lng = $this->long;
+                } else {
+                    $this->_lng = $this->reducePrecision($this->long);
+                }
+                
+                return $this->long();
+            }
+            
+            return null;
+        }
+        
+        function jsonSerialize(): mixed 
+        {
+            $object = parent::jsonSerialize();
+            
+            $object['latitude'] = (string)$this->lat();
+            $object['longitude'] = (string)$this->long();
+            
+            return $object;        
+        }
+        
+        /**
+         * Saves changes to this object based on user input
+         * @return true|false
+         */
+        function saveDataFromInput()
         {
 
-            function getTitle()
-            {
-                return 'Checked into ' . $this->placename;
+            if (empty($this->_id)) {
+                $new = true;
+            } else {
+                $new = false;
             }
+            $body         = \Idno\Core\Idno::site()->currentPage()->getInput('body');
+            $tags         = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
+            $lat          = \Idno\Core\Idno::site()->currentPage()->getInput('lat');
+            $long         = \Idno\Core\Idno::site()->currentPage()->getInput('long');
+            $user_address = \Idno\Core\Idno::site()->currentPage()->getInput('user_address');
+            $placename    = \Idno\Core\Idno::site()->currentPage()->getInput('placename');
+            $tags         = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
+            $access       = \Idno\Core\Idno::site()->currentPage()->getInput('access');
+            $anonymity       = \Idno\Core\Idno::site()->currentPage()->getInput('anonymity');
 
-            function getDescription()
-            {
-                if (empty($this->body)) {
-                    return ' ';
+            if ($time = \Idno\Core\Idno::site()->currentPage()->getInput('created')) {
+                if ($time = strtotime($time)) {
+                    $this->created = $time;
                 }
-                return $this->body;
             }
 
-            /**
-             * Status objects have type 'note'
-             * @return 'note'
-             */
-            function getActivityStreamsObjectType()
-            {
-                return 'place';
-            }
-
-            /**
-             * Saves changes to this object based on user input
-             * @return true|false
-             */
-            function saveDataFromInput()
-            {
-
-                if (empty($this->_id)) {
-                    $new = true;
-                } else {
-                    $new = false;
-                }
-                $body         = \Idno\Core\Idno::site()->currentPage()->getInput('body');
-                $tags         = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
-                $lat          = \Idno\Core\Idno::site()->currentPage()->getInput('lat');
-                $long         = \Idno\Core\Idno::site()->currentPage()->getInput('long');
-                $user_address = \Idno\Core\Idno::site()->currentPage()->getInput('user_address');
-                $placename    = \Idno\Core\Idno::site()->currentPage()->getInput('placename');
-                $tags         = \Idno\Core\Idno::site()->currentPage()->getInput('tags');
-                $access       = \Idno\Core\Idno::site()->currentPage()->getInput('access');
-
-                if ($time = \Idno\Core\Idno::site()->currentPage()->getInput('created')) {
-                    if ($time = strtotime($time)) {
-                        $this->created = $time;
+            if (!empty($lat) && !empty($long)) {
+                $this->lat       = $lat;
+                $this->long      = $long;
+                $this->placename = $placename;
+                $this->title     = \Idno\Core\Idno::site()->language()->_('Checked into %s', [$placename]);
+                $this->body      = $body;
+                $this->address   = $user_address;
+                $this->setAccess($access);
+                $this->tags = $tags;
+                $this->anonymity = ($anonymity == 'Yes' ? 'Yes' : false);
+                if ($this->publish($new)) {
+                    if ($new && $access == 'PUBLIC') {
+                        \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
                     }
+
+                    return true;
                 }
-
-                if (!empty($lat) && !empty($long)) {
-                    $this->lat       = $lat;
-                    $this->long      = $long;
-                    $this->placename = $placename;
-                    $this->title     = 'Checked into ' . $placename;
-                    $this->body      = $body;
-                    $this->address   = $user_address;
-                    $this->setAccess($access);
-                    $this->tags = $tags;
-                    if ($this->publish($new)) {
-                        if ($new && $access == 'PUBLIC') {
-                            \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
-                        }
-
-                        return true;
-                    }
-                } else {
-                    \Idno\Core\Idno::site()->session()->addErrorMessage('You can\'t save an empty checkin.');
-                }
-
-                return false;
-
+            } else {
+                \Idno\Core\Idno::site()->session()->addErrorMessage(\Idno\Core\Idno::site()->language()->_('You can\'t save an empty checkin.'));
             }
 
-            function deleteData()
-            {
-                if ($this->getAccess() == 'PUBLIC') {
-                    \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
-                }
-            }
-
-            /**
-             * Given a latitude and longitude, reverse geocodes it into a structure including name, address,
-             * city, etc
-             *
-             * @param $latitude
-             * @param $longitude
-             * @return bool|mixed
-             */
-            static function queryLatLong($latitude, $longitude)
-            {
-
-                $query    = self::getNominatimEndpoint() . "reverse?lat={$latitude}&lon={$longitude}&format=json&zoom=18";
-                $response = array();
-
-                $http_response = \Idno\Core\Webservice::get($query)['content'];
-
-                if (!empty($http_response)) {
-                    if ($contents = @json_decode($http_response)) {
-                        if (!empty($contents->address)) {
-                            $addr             = (array)$contents->address;
-                            $response['name'] = implode(', ', array_slice($addr, 0, 1));
-                        }
-                        if (!empty($contents->display_name)) {
-                            $response['display_name'] = $contents->display_name;
-                        }
-
-                        return $response;
-                    }
-                }
-
-                return false;
-
-            }
-
-            /**
-             * Takes an address and returns OpenStreetMap data via Nominatim, including latitude and longitude
-             *
-             * @param string $address
-             * @return array|bool
-             */
-            static function queryAddress($address, $limit = 1)
-            {
-
-                $query = self::getNominatimEndpoint() . "search?q=" . urlencode($address) . "&format=json";
-
-                $http_response = \Idno\Core\Webservice::get($query)['content'];
-
-                if (!empty($http_response)) {
-                    if ($contents = @json_decode($http_response)) {
-                        $contents              = (array)$contents;
-                        $contents              = (array)array_pop($contents); // This will have been an array wrapped in an array
-                        $contents['latitude']  = $contents['lat'];
-                        $contents['longitude'] = $contents['lon'];
-
-                        return $contents;
-                    }
-                }
-
-                return false;
-
-            }
-
-            /**
-             * Returns the OpenStreetMap Nominatim endpoint that we should be using
-             * @return string
-             */
-            static function getNominatimEndpoint()
-            {
-                if ($config = \Idno\Core\Idno::site()->config()->checkin) {
-                    if (!empty($config['endpoint'])) {
-                        return $config['endpoint'];
-                    }
-                }
-
-                return 'http://nominatim.openstreetmap.org/';
-            }
+            return false;
 
         }
 
+        function deleteData()
+        {
+            if ($this->getAccess() == 'PUBLIC') {
+                \Idno\Core\Webmention::pingMentions($this->getURL(), \Idno\Core\Idno::site()->template()->parseURLs($this->getTitle() . ' ' . $this->getDescription()));
+            }
+        }
+
+        public function jsonLDSerialise(array $params = array())
+        {
+
+            $json = [
+                "@context" => "http://schema.org",
+                "@type" => "CheckInAction",
+                'agent' => [
+                    "@type" => "Person",
+                    "name" => $this->getOwner()->getName()
+                ],
+                'location' => [
+                    '@type' => 'Place',
+                    'address' => $this->address,
+                    'name' => $this->placename,
+                    "geo" => [
+                        "@type" => "GeoCoordinates",
+                        "latitude" => $this->lat(),
+                        "longitude" => $this->long()
+                    ],
+                ],
+            ];
+
+            return $json;
+        }
+
     }
+
+}

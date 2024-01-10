@@ -3,19 +3,21 @@
 /**
  * Utility wrapper around files that will be used in web service calls
  *
- * @package idno
+ * @package    idno
  * @subpackage core
  */
 
 namespace Idno\Core {
 
-    class WebserviceFile {
+    class WebserviceFile
+    {
 
         private $file;
         private $name;
         private $mime;
 
-        function __construct($file, $mime, $name) {
+        function __construct($file, $mime, $name)
+        {
             $this->file = $file;
             $this->mime = $mime;
             $this->name = $name;
@@ -23,9 +25,11 @@ namespace Idno\Core {
 
         /**
          * Return curl parameters supported by your system.
+         *
          * @return \CURLFile|string
          */
-        function getCurlParameters() {
+        function getCurlParameters()
+        {
 
             if (class_exists('CURLFile')) {
                 return new \CURLFile($this->file, $this->mime, $this->name);
@@ -36,10 +40,12 @@ namespace Idno\Core {
 
         /**
          * Converts an "@" formatted file string into a WebserviceFile
-         * @param type $fileuploadstring
+         *
+         * @param  type $fileuploadstring
          * @return WebserviceFile|false
          */
-        static function createFromCurlString($fileuploadstring) {
+        static function createFromCurlString($fileuploadstring)
+        {
             if ($fileuploadstring[0] == '@') {
                 $bits = explode(';', $fileuploadstring);
 

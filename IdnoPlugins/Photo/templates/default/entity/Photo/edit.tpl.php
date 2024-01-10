@@ -1,5 +1,15 @@
-<?= $this->draw('entity/edit/header'); ?>
-    <form action="<?= $vars['object']->getURL() ?>" method="post" enctype="multipart/form-data">
+<?php
+
+    $attachments = $vars['object']->getAttachments(); // TODO: Handle multiple
+    $multiple = false;
+    $num_pics = count($attachments);
+    if ($num_pics > 1)
+        $multiple = true;
+    $cnt = 0;
+?>
+
+<?php echo $this->draw('entity/edit/header'); ?>
+    <form action="<?php echo $vars['object']->getURL() ?>" method="post" enctype="multipart/form-data">
 
         <div class="row">
 
@@ -8,108 +18,78 @@
                 <h4>
                     <?php
 
-                        if (empty($vars['object']->_id)) {
-                            ?>New Photo<?php
-                        } else {
-                            ?>Edit Photo<?php
-                        }
+                    if (empty($vars['object']->_id)) {
+                        ?><?php echo \Idno\Core\Idno::site()->language()->_('New Photo'); ?><?php
+                    } else {
+                        ?><?php echo \Idno\Core\Idno::site()->language()->_('Edit Photo'); ?><?php
+                    }
 
                     ?>
                 </h4>
+                
+                <div class="photo-files <?php if ($multiple) echo "multiple-images"; ?>" data-num-pics="<?php echo $num_pics; ?>">
+                    <?php for ($n = 0; $n < 10; $n++) { ?>
+                        <div class="image-file" data-number="<?php echo $n; ?>" style="<?php if ($n > 0) echo 'display: none;'; ?>">
+                            <?php echo $this->__([
+                                'name' => 'photo[]',
+                                'hide-existing' => $n > 0,
+                                'hide-delete' => $n > 0
+                            ])->draw('forms/input/image-file'); ?>
+                        </div>
+                    <?php } ?>
+                </div>
 
-                <?php
-
-                    if (empty($vars['object']->_id)) {
-
-                        ?>
-                        <div id="photo-preview"></div>
-                        <p>
-                                <span class="btn btn-primary btn-file">
-                                        <i class="fa fa-camera"></i> <span
-                                        id="photo-filename">Select a photo</span> <input type="file" name="photo"
-                                                                                         id="photo"
-                                                                                         class="col-md-9 form-control"
-                                                                                         accept="image/*;capture=camera"
-                                                                                         onchange="photoPreview(this)"/>
-
-                                    </span>
-                        </p>
-
-                    <?php
-
-                    }
-
-                ?>
-
-                <div id="photo-details" style="<?php
-
-                    /*if (empty($vars['object']->_id)) {
-                        echo 'display:none';
-                    }*/
-
-                    ?>">
+                <div id="photo-details">
 
                     <div class="content-form">
                         <label for="title">
-                            Title</label>
-                        <input type="text" name="title" id="title"
-                               value="<?= htmlspecialchars($vars['object']->title) ?>" class="form-control"
-                               placeholder="Give it a title"/>
+                            <?php echo \Idno\Core\Idno::site()->language()->_('Title'); ?></label>
+                        <?php echo $this->__([
+                            'name' => 'title',
+                            'id' => 'title',
+                            'placeholder' => \Idno\Core\Idno::site()->language()->_('Give it a title'),
+                            'value' => $vars['object']->title,
+                        'class' => 'form-control'])->draw('forms/input/input'); ?>
                     </div>
 
-                    <?= $this->__([
+                    <?php echo $this->__([
                         'name' => 'body',
                         'value' => $vars['object']->body,
                         'wordcount' => false,
                         'class' => 'wysiwyg-short',
                         'height' => 100,
-                        'placeholder' => 'Describe your photo',
-                        'label' => 'Description'
+                        'placeholder' => \Idno\Core\Idno::site()->language()->_('Describe your photo'),
+                        'label' => \Idno\Core\Idno::site()->language()->_('Description')
                     ])->draw('forms/input/richtext')?>
 
-                    <?= $this->draw('entity/tags/input'); ?>
+                    <?php echo $this->draw('entity/tags/input'); ?>
 
-                </div>
-                <div id="photo-details-toggle" style="<?php
-                    //if (!empty($vars['object']->_id)) {
-                        echo 'display:none';
-                    //}
-                ?>">
-                    <p>
-                        <small><a href="#" onclick="$('#photo-details').show(); $('#photo-details-toggle').hide(); return false;">+ Add details</a></small>
-                    </p>
                 </div>
                 
                 <?php echo $this->drawSyndication('image', $vars['object']->getPosseLinks()); ?>
-                <?php if (empty($vars['object']->_id)) { ?><input type="hidden" name="forward-to"
-                                                                  value="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'content/all/'; ?>" /><?php } ?>
-                <?= $this->draw('content/access'); ?>
+                <?php if (empty($vars['object']->_id)) {
+                    echo $this->__(['name' => 'forward-to', 'value' => \Idno\Core\Idno::site()->config()->getDisplayURL() . 'content/all/'])->draw('forms/input/hidden');
+                } ?>
+                <?php echo $this->draw('content/extra'); ?>
+                <?php echo $this->draw('content/access'); ?>
                 <p class="button-bar ">
-                    <?= \Idno\Core\Idno::site()->actions()->signForm('/photo/edit') ?>
-                    <input type="button" class="btn btn-cancel" value="Cancel" onclick="hideContentCreateForm();"/>
-                    <input type="submit" class="btn btn-primary" value="Publish"/>
+                    <?php echo \Idno\Core\Idno::site()->actions()->signForm('/photo/edit') ?>
+                    <input type="button" class="btn btn-cancel" value="<?php echo \Idno\Core\Idno::site()->language()->_('Cancel'); ?>" onclick="hideContentCreateForm();"/>
+                    <input type="submit" class="btn btn-primary" value="<?php echo \Idno\Core\Idno::site()->language()->_('Publish'); ?>"/>
                 </p>
             </div>
 
         </div>
     </form>
-    <script>
-        //if (typeof photoPreview !== function) {
-        function photoPreview(input) {
+<script>
+    $(document).ready(function () {
+        $('.photo-files input').change(function(){
+            var number = parseInt($(this).closest('div.image-file').attr('data-number'));
+            number = number + 1;
+            console.log("Showing item " + number);
+            $('.photo-files .image-file[data-number='+number.toString()+']').show();
+        });
+    } );
+</script>    
 
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-
-                reader.onload = function (e) {
-                    $('#photo-preview').html('<img src="" id="photopreview" style="display:none; width: 400px">');
-                    $('#photo-filename').html('Choose different photo');
-                    $('#photopreview').attr('src', e.target.result);
-                    $('#photopreview').show();
-                }
-
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        //}
-    </script>
-<?= $this->draw('entity/edit/footer'); ?>
+<?php echo $this->draw('entity/edit/footer');

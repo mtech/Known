@@ -1,0 +1,108 @@
+{
+    "name": "idno/known",
+    "description": "A social publishing platform.",
+    "type": "project",
+    "homepage": "https://withknown.com/",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "require": {
+        "php": ">=8.1.0",
+        "ext-curl": "*",
+        "ext-date": "*",
+        "ext-dom": "*",
+        "ext-gd": "*",
+        "ext-json": "*",
+        "ext-libxml": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-Reflection": "*",
+        "ext-session": "*",
+        "ext-SimpleXML": "*",
+        "ext-openssl": "*",
+        "ext-gettext": "*",
+        "mapkyca/php-ogp": "^1.0",
+        "psr/log": "~3.0",
+        "idno/torophp": "^3.0",
+        "mf2/mf2": "0.5.0",
+        "swiftmailer/swiftmailer": "6.3.0",
+        "forkawesome/fork-awesome": "1.2",
+        "twbs/bootstrap": "3.4.1",
+        "ezyang/htmlpurifier": "4.17.0",
+        "rmm5t/jquery-timeago": "1.6.7",
+        "tinymce/tinymce": "~6.2",
+        "symfony/event-dispatcher": "~6.1",
+        "symfony/console": "~6.1",
+        "symfony/http-foundation": "~6.1",
+        "symfony/cache": "~6.1",
+        "simplepie/simplepie": "1.8.0",
+        "mapkyca/mrclay_autop_known": "^1.0",
+        "npm-asset/underscore": "~1.13",
+        "npm-asset/bootstrap-accessibility-plugin": "1.0.7",
+        "npm-asset/bootstrap-toggle": "2.2.2",
+        "npm-asset/exif-js": "2.3.0",
+        "npm-asset/jquery": "3.7.1",
+        "npm-asset/mediaelement": "7.0.0",
+        "npm-asset/tinymce--tinymce-jquery": "2.0.1-patch20221215235251599",
+        "npm-asset/vanilla-fitvids": "1.2.0",
+        "idno/mentionjs": "^1.0",
+        "mapkyca/known-mongo-php-library": "1.0.3",
+        "indieweb/mention-client": "^1.2.1",
+        "twig/twig": "3.8.0",
+        "masterminds/html5": "^2.7",
+        "ramsey/uuid": "^4.1",
+        "npm-asset/eonasdan-bootstrap-datetimepicker": "^6.2",
+        "composer/installers": "^2",
+        "vlucas/phpdotenv": "^5.3"
+    },
+    "license": "Apache-2.0",
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "keywords": [
+        "blogging",
+        "publishing",
+        "social",
+        "indieweb",
+        "community"
+    ],
+    "support": {
+        "forum": "https://groups.google.com/forum/#!forum/known-dev",
+        "docs": "http://docs.withknown.com",
+        "irc": "irc://irc.freenode.net/knownchat"
+    },
+    "autoload": {
+        "psr-4": {
+            "Idno\\": "Idno/",
+            "IdnoPlugins\\": "IdnoPlugins/",
+            "Themes\\": "Themes/",
+            "ConsolePlugins\\": "ConsolePlugins/",
+            "Tests\\": "Tests/"
+        }
+    },
+    "require-dev": {
+        "mapkyca/known-language-tools": "^1.0",
+        "mapkyca/mapkyca-known-docker": "^1.0",
+        "codeception/aspect-mock": "*",
+        "squizlabs/php_codesniffer": "3.*"
+    },
+    "extra": {
+        "unused": [
+            "masterminds/html5"
+        ]
+    },
+    "funding": [
+        {
+            "type": "opencollective",
+            "url": "https://opencollective.com/known"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    }
+}

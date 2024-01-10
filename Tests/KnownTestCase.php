@@ -2,7 +2,8 @@
 
 namespace Tests {
 
-    class KnownTestCase extends \PHPUnit_Framework_TestCase {
+    class KnownTestCase extends \PHPUnit\Framework\TestCase
+    {
 
         /// Admin user
         public static $testAdmin;
@@ -12,17 +13,19 @@ namespace Tests {
 
         /**
          * Return a test user, creating it if necessary.
+         *
          * @return \Idno\Entities\User
          */
-        protected function &user() {
+        protected function &user()
+        {
 
             // Have we already got a user?
-            if (static::$testUser)
+            if (static::$testUser) {
                 return static::$testUser;
+            }
 
             // Get a user (shouldn't happen)
-            if ($user = \Idno\Entities\User::getByHandle('testuser'))
-            {
+            if ($user = \Idno\Entities\User::getByHandle('testuser')) {
                 static::$testUser = $user;
 
                 return $user;
@@ -35,7 +38,7 @@ namespace Tests {
             $user->setPassword(md5(rand())); // Set password to something random to mitigate security holes if cleanup fails
             $user->setTitle('Test User');
 
-            $user->save();
+            $user->save(true);
 
             static::$testUser = $user;
 
@@ -44,17 +47,19 @@ namespace Tests {
 
         /**
          * Return an admin test user, creating it if necessary.
+         *
          * @return \Idno\Entities\User
          */
-        protected function &admin() {
+        protected function &admin()
+        {
 
             // Have we already got a user?
-            if (static::$testAdmin)
+            if (static::$testAdmin) {
                 return static::$testAdmin;
+            }
 
             // Get a user (shouldn't happen)
-            if ($user = \Idno\Entities\User::getByHandle('testadmin'))
-            {
+            if ($user = \Idno\Entities\User::getByHandle('testadmin')) {
                 static::$testAdmin = $user;
 
                 return $user;
@@ -68,7 +73,7 @@ namespace Tests {
             $user->setTitle('Test Admin User');
             $user->setAdmin(true);
 
-            $user->save();
+            $user->save(true);
 
             static::$testAdmin = $user;
 
@@ -76,9 +81,28 @@ namespace Tests {
         }
 
         /**
+         * Swap the currently logged in user.
+         *
+         * @param \Idno\Entities\User $user
+         */
+        protected function swapUser($user)
+        {
+
+            $current = \Idno\Core\site()->session()->currentUser();
+            \Idno\Core\site()->session()->logUserOff();
+
+            if (!empty($user)) {
+                \Idno\Core\site()->session()->logUserOn($user);
+            }
+
+            return $current;
+        }
+
+
+        /**
          * Set settings.
          */
-        public static function setupBeforeClass()
+        public static function setUpBeforeClass():void
         {
             \Idno\Core\Idno::site()->config()->hub = '';
         }
@@ -86,7 +110,7 @@ namespace Tests {
         /**
          * Clean up framework.
          */
-        public static function tearDownAfterClass()
+        public static function tearDownAfterClass():void
         {
             // Delete users, if we've created some but forgot to clean up
             if (static::$testUser) {

@@ -1,17 +1,14 @@
-<p>
-    Your data export is ready. Click below to download it:
-</p>
 <p style="text-align: left">
-    <a class="btn btn-primary" href="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>file/<?=$vars['export_file_id']?>/<?=$vars['export_filename']?>">Download your data</a><br>
-    <small>Generated <time class="dt-published"
-                           datetime="<?= date('c', $vars['export_last_requested']) ?>"><?= date('c', $vars['export_last_requested']) ?></time></small>
+    <a class="btn btn-primary" href="<?php echo \Idno\Core\Idno::site()->config()->getDisplayURL()?>file/<?php echo $vars['export_file_id']?>/<?php echo $vars['export_filename']?>"><?php echo \Idno\Core\Idno::site()->language()->_('Download your data'); ?></a><br>
+    <small><?php echo \Idno\Core\Idno::site()->language()->_('Generated'); ?> <time class="dt-published"
+                           datetime="<?php echo date('c', $vars['export_last_requested']) ?>"><?php echo date('c', $vars['export_last_requested']) ?></time></small>
 </p>
 <p style="margin-top: 2em">
-    You can also regenerate your data archive by clicking below:
+    <?php echo \Idno\Core\Idno::site()->language()->_('You can also regenerate a new copy of your data archive.'); ?>
 </p>
-<form action="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>admin/export/generate/" method="post">
+<form action="<?php echo \Idno\Core\Idno::site()->config()->getDisplayURL()?>admin/export/generate/" method="post">
     <p style="text-align: left; margin-top: 1em;">
-        <input type="submit" class="btn btn-primary" value="Re-archive your data">
+        <input type="submit" class="btn btn-primary" value="<?php echo \Idno\Core\Idno::site()->language()->_('Re-archive your data'); ?>">
         <?php
 
             echo \Idno\Core\Idno::site()->actions()->signForm(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'admin/export/generate');

@@ -1,54 +1,77 @@
+.AppleDouble
 .DS_Store
 .idea/*
 Idno/.idea/.name
+.scannerwork
+
+.env
 
 .vagrant
+.elasticbeanstalk
+.phpunit.result.cache
 
+node_modules
+.sass-cache
+
+*.es6
 *.iml
+*.bak
+*.log
+test.php
+/js/service-worker.js
+/js/service-worker.js.map
+/js/known.js
+/js/known.js.map
 
 /nbproject/private/nbproject/project.xml
 /nbproject/project.properties
 /nbproject/private/
+/**/nbproject/
 /.htaccess
 /doc/output/
 /Uploads/*
+/configuration/
+
+/composer.phar
+/vendor
 
 /.DS_Store
 /*/.DS_Store
+
+/codedocs/
 
 config.ini
 *.json
 tests/_output/*
 *-ori.*
 
-IdnoPlugins/*
-!IdnoPlugins/APITester/
-!IdnoPlugins/Bridgy/
-!IdnoPlugins/Checkin/
-!IdnoPlugins/Comic/
-!IdnoPlugins/Comments/
-!IdnoPlugins/Convoy/
-!IdnoPlugins/Event/
-!IdnoPlugins/Firefox/
-!IdnoPlugins/FooterJS/
-!IdnoPlugins/IndiePub/
-!IdnoPlugins/Like/
-!IdnoPlugins/Media/
-!IdnoPlugins/Photo/
-!IdnoPlugins/StaticPages/
-!IdnoPlugins/Status/
-!IdnoPlugins/Styles/
-!IdnoPlugins/Text/
-!IdnoPlugins/Webhooks/
+IdnoPlugins.local/*
 
-Themes/Ansel/
-Themes/KQED/
-Themes/Paul/
+IdnoPlugins/
+!IdnoPlugins/Bridgy
+!IdnoPlugins/Checkin
+!IdnoPlugins/Event
+!IdnoPlugins/IndiePub
+!IdnoPlugins/Like
+!IdnoPlugins/Media
+!IdnoPlugins/Photo
+!IdnoPlugins/StaticPages
+!IdnoPlugins/Status
+!IdnoPlugins/Styles
+!IdnoPlugins/Text
+!IdnoPlugins/Webhooks
+
+ConsolePlugins/*
 
 error_log
 
 configbackup.ini
 
 # Allow these previously excluded files
-!/external/fontello/config.json
 !/Uploads/readme.txt
+
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

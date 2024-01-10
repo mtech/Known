@@ -3,46 +3,24 @@
     $currentPage = \Idno\Core\Idno::site()->currentPage();
     $pageOwner = $currentPage->getOwner();
 
-    if (empty($vars['title'])) $vars['title'] = '';
+if (empty($vars['title'])) { $vars['title'] = '';
+}
 
-    if (!empty($vars['object'])) {
-        $objectIcon = $vars['object']->getIcon();
-    } else {
-        $objectIcon = false;
-    }
-
-    if (\Idno\Core\Idno::site()->session()->isLoggedIn()) {
-
-        ?>
-        <!-- <link rel="manifest" href="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>chrome/manifest.json"> -->
-        <?php
-        if (Idno\Core\site()->isSecure()) {
-            ?>
-            <!-- <script>
-                window.addEventListener('load', function () {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>chrome/service-worker.js', {scope: '/'})
-                            .then(function (r) {
-                                console.log('Registered service worker');
-                            })
-                            .catch(function (whut) {
-                                console.error('Could not register service worker');
-                                console.error(whut);
-                            });
-                    }
-                });
-            </script> -->
-            <?php
-        }
-
-    }
+if (!empty($vars['object'])) {
+    $objectIcon = $vars['object']->getIcon();
+} else {
+    $objectIcon = false;
+}
 
     $opengraph = array(
         'og:type'      => 'website',
-        'og:title'     => htmlspecialchars(strip_tags($vars['title'])),
-        'og:site_name' => htmlspecialchars(strip_tags(\Idno\Core\Idno::site()->config()->title)),
+        'og:title'     => htmlspecialchars(strip_tags($vars['title']), ENT_COMPAT, 'UTF-8'),
+        'og:site_name' => htmlspecialchars(strip_tags(\Idno\Core\Idno::site()->config()->title), ENT_COMPAT, 'UTF-8'),
         'og:image'     => $currentPage->getIcon()
     );
+
+    if (!empty($vars['description'])) { $opengraph['og:description'] = $vars['description'];
+    }
 
     if ($currentPage->isPermalink()) {
 
@@ -52,8 +30,8 @@
             $owner  = $vars['object']->getOwner();
             $object = $vars['object'];
 
-            $opengraph['og:title']       = htmlspecialchars(strip_tags($vars['object']->getTitle()));
-            $opengraph['og:description'] = htmlspecialchars($vars['object']->getShortDescription());
+            $opengraph['og:title']       = htmlspecialchars(strip_tags($vars['object']->getTitle()), ENT_COMPAT, 'UTF-8');
+            $opengraph['og:description'] = htmlspecialchars($vars['object']->getShortDescription(), ENT_COMPAT, 'UTF-8');
             $opengraph['og:type']        = 'article'; //htmlspecialchars($vars['object']->getActivityStreamsObjectType());
             $opengraph['og:image']       = $objectIcon; //$owner->getIcon(); //Icon, for now set to being the author profile pic
 
@@ -110,9 +88,9 @@
 
             <!-- Twitter card -->
             <meta name="twitter:card" content="summary"/>
-            <meta name="twitter:site" content="@<?= $twitter_account ?>"/>
-            <meta name="twitter:title" content="<?= htmlspecialchars($vars['title']) ?>"/>
-            <meta name="twitter:description" content="<?= htmlspecialchars($vars['description']) ?>"/>
+            <meta name="twitter:site" content="@<?php echo $twitter_account ?>"/>
+            <meta name="twitter:title" content="<?php echo htmlspecialchars($vars['title'], ENT_COMPAT, 'UTF-8') ?>"/>
+            <meta name="twitter:description" content="<?php echo htmlspecialchars($vars['description'], ENT_COMPAT, 'UTF-8') ?>"/>
 
             <?php
 
@@ -123,4 +101,3 @@
         }
     }
 
-?>

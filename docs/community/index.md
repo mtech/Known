@@ -1,4 +1,4 @@
-# Open source community
+# Open Source Community
 
 Known is an open source application. That means that you have the following freedoms:
 
@@ -20,11 +20,13 @@ to come join in.
 The best first step is to [join our development mailing list](https://groups.google.com/forum/#!forum/known-dev). Despite
 the name, it's not just for developers!
 
+You can also help fund the project by joining us at [OpenCollective](https://opencollective.com/known)!
+
 ## A safe space for everyone to contribute
 
 We want the Known community to be a safe space for everyone to participate.
 
-As such, we have an [anti-harassment policy](harassment.md) that covers all our community spaces. A healthy communicate
+As such, we have an [anti-harassment policy](harassment.md) that covers all our community spaces. A healthy community
 is required to make Known thrive, so we're dedicated to making it as welcoming as possible.
 
 If you have any concerns about any activity in the community, you shouldn't hesitate to

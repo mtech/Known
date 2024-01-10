@@ -1,6 +1,8 @@
-<?php 
-if (version_compare(\Idno\Core\Idno::site()->version(), strtolower($vars['version'])) < 0) {
+<?php
+$details = \Idno\Core\Idno::site()->language()->_('%s installed', [\Idno\Core\Version::version()]);
+if (version_compare(\Idno\Core\Version::version(), strtolower($vars['version'])) < 0) {
     $label = 'label-danger';
+    $details = $vars['version'] . " - ($details)";
 } else {
     $label = 'label-success';
-}    ?><span class="label <?= $label ?>"><?= \Idno\Core\Idno::site()->version() ?> installed</span>
+}    ?><span class="label <?php echo $label ?>"><?php echo $details; ?></span>

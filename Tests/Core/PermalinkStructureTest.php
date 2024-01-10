@@ -2,11 +2,12 @@
 
 namespace Tests\Core {
 
-    class PermalinkStructureTest extends \Tests\KnownTestCase {
+    class PermalinkStructureTest extends \Tests\KnownTestCase
+    {
 
         private function createEntry()
         {
-            $rnd = rand(0,9999).'-'.time();
+            $rnd = rand(0, 9999).'-'.time();
             $entity = new \IdnoPlugins\Text\Entry();
             $entity->setOwner($this->user());
             $entity->title = "The Title $rnd";
@@ -30,15 +31,14 @@ namespace Tests\Core {
             $this->assertEquals('/:year/:slug', \Idno\Core\Idno::site()->config()->getPermalinkStructure());
             $this->assertEquals("$base$year/$slug", $entity->getURL());
             $contents = file_get_contents($entity->getURL());
-            $this->assertContains('hamstring baseball duckbill firecracker', $contents);
+            $this->assertNotFalse(strpos($contents, 'hamstring baseball duckbill firecracker'), 'The specified string should have been found in the entity body. If this is failing, KNOWN_DOMAIN may not be set.');
 
             // /year/month/slug
             \Idno\Core\Idno::site()->config()->permalink_structure = '/:year/:month/:slug';
             \Idno\Core\Idno::site()->config()->save();
             $this->assertEquals("$base$year/$month/$slug", $entity->getURL());
             $contents = file_get_contents($entity->getURL());
-            $this->assertContains('hamstring baseball duckbill firecracker', $contents);
-
+            $this->assertNotFalse(strpos($contents, 'hamstring baseball duckbill firecracker'), 'The specified string should have been found in the entity body. If this is failing, KNOWN_DOMAIN may not be set.');
 
             $entity->delete();
         }

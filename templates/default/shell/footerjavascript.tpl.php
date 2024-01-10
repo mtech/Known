@@ -3,49 +3,65 @@
 
 <?php
 
-    if (\Idno\Core\Idno::site()->session()->isLoggedIn()) {
+if (\Idno\Core\Idno::site()->session()->isLoggedIn()) {
 
-        ?>
+    ?>
         <!-- WYSIWYG editor -->
         <script
-            src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>external/tinymce/js/tinymce/tinymce.min.js"
+            src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/tinymce/tinymce/tinymce.min.js"
             type="text/javascript"></script>
         <script
-            src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>external/tinymce/js/tinymce/jquery.tinymce.min.js"
+            src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/npm-asset/tinymce--tinymce-jquery/dist/tinymce-jquery.min.js"
             type="text/javascript"></script>
         <?php
 
+}
+
+$lang = \Idno\Core\Idno::site()->language()->getLanguage();
+
+$l10n = substr($lang, 0, 2);
+
+if ($lang == 'pt_BR' || substr($lang, 0, 2) == 'zh') {
+    if ($lang == 'pt_BR') {
+        $lang = strtolower($lang);
     }
+    $l10n = str_replace('_', '-', $lang);
+}
 
 ?>
 
 <script
-    src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/jquery-timeago/' ?>jquery.timeago.js"></script>
+    src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/rmm5t/jquery-timeago/jquery.timeago.js"></script>
 <script
-    src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/jquery-pjax/' ?>jquery.pjax.js"></script>
-<script src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/underscore/underscore-min.js' ?>"
+    src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/rmm5t/jquery-timeago/locales/jquery.timeago.<?php echo $l10n; ?>.js"></script>
+<script src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/npm-asset/underscore/underscore-min.js"
         type="text/javascript"></script>
-<!--<script src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/mention/bootstrap-typeahead.js' ?>"
+<!--<script src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() . 'vendor/idno/mentionjs/bootstrap-typeahead.js' ?>"
         type="text/javascript"></script>
-<script src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/mention/mention.js' ?>"
+<script src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() . 'vendor/idno/mentionjs/mention.js' ?>"
         type="text/javascript"></script> -->
 
+
+ 
+<script
+    src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/npm-asset/moment/min/moment-with-locales.min.js"></script>       
+
+<script
+    src="<?php echo \Idno\Core\Idno::site()->config()->getStaticURL() ?>vendor/npm-asset/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+
+        
 <?php
-    if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
-        echo $this->draw('js/mentions');
-    }
+if (\Idno\Core\Idno::site()->session()->isLoggedOn()) {
+    echo $this->draw('js/mentions');
+}
     // Load javascript assets
-    if ((\Idno\Core\Idno::site()->currentPage()) && $scripts = \Idno\Core\Idno::site()->currentPage->getAssets('javascript')) {
-        foreach ($scripts as $script) {
-            ?>
-            <script src="<?= $script ?>"></script>
+if ((\Idno\Core\Idno::site()->currentPage()) && $scripts = \Idno\Core\Idno::site()->currentPage()->getAssets('javascript')) {
+    echo "<!-- Begin asset javascript -->";
+    foreach ($scripts as $script) {
+        ?>
+            <script src="<?php echo $script ?>"></script>
             <?php
-        }
     }
-?>
+    echo "<!-- End asset javascript -->";
+}
 
-<!-- HTML5 form element support for legacy browsers -->
-<script src="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() . 'external/h5f/h5f.min.js' ?>"></script>
-
-<script src="<?= \Idno\Core\Idno::site()->config()->getStaticURL() . 'js/templates/default/shell.js' ?>"></script>
-<script src="<?= \Idno\Core\Idno::site()->config()->getStaticURL() . 'js/embeds.js' ?>"></script>

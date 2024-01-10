@@ -6,6 +6,7 @@ $fields_and_defaults = array(
     'id' => false,
     'autocomplete' => false,
     'autofocus' => false,
+    'accept' => false,
     'checked' => false,
     'disabled' => false,
     'min' => false,
@@ -23,6 +24,7 @@ $fields_and_defaults = array(
     'onclick' => false,
     'onfocus' => false,
     'onblur' => false,
+    'onchange' => false,
 );
 
 // We always want a unique ID
@@ -34,25 +36,56 @@ if (!isset($vars['id'])) {
 ?>
 <input
 <?php
+
+$published = [];
+if (isset($vars['placeholder']))
+    $published['placeholder'] = $vars['placeholder'];
+if (isset($vars['alt']))
+    $published['alt'] = $vars['alt'];
+
 foreach ($fields_and_defaults as $field => $default) {
     if (isset($vars[$field])) {
-        if ($vars[$field] === true)
+        if ($vars[$field] === true) {
             echo "$field ";
-        else
+            $published[$field] = true;
+        } else {
             echo "$field=\"{$vars[$field]}\" ";
+            $published[$field] = $vars[$field];
+        }
     }
     else {
         if ($default !== false) {
-            if ($default === true)
+            if ($default === true) {
                 echo "$field ";
-            else
+                $published[$field] = true;
+            } else {
                 echo "$field=\"$default\" ";
+                $published[$field] = $default;
+            }
         }
     }
 }
 ?>
-    class="input <?php echo isset($vars['class']) ? $vars['class'] : 'input-' . (isset($vars['type']) ? $vars['type'] : 'text'); ?>"
-<?php if (isset($vars['placeholder'])) { ?>placeholder="<?php echo htmlentities($vars['placeholder'], ENT_QUOTES, 'UTF-8'); ?>" <?php } // Placeholder is a special case ?>
-<?php if (isset($vars['alt'])) { ?>alt="<?php echo htmlentities($vars['alt'], ENT_QUOTES, 'UTF-8'); ?>" <?php } // Alt is a special case ?>
-    value="<?php echo htmlentities($vars['value'], ENT_QUOTES, 'UTF-8'); ?>"
+    class="form-control input <?php echo isset($vars['class']) ? $vars['class'] : 'input-' . (isset($vars['type']) ? $vars['type'] : 'text'); ?>"
+<?php if (isset($vars['placeholder'])) { ?>placeholder="<?php echo htmlentities($vars['placeholder'], ENT_QUOTES, 'UTF-8'); ?>" <?php
+} // Placeholder is a special case ?>
+<?php if (isset($vars['alt'])) { ?>alt="<?php echo htmlentities($vars['alt'], ENT_QUOTES, 'UTF-8'); ?>" <?php
+} // Alt is a special case ?>
+    value="<?php if (isset($vars['value'])) echo htmlentities($vars['value'], ENT_QUOTES, 'UTF-8'); ?>"
     /> 
+<?php
+// Ensure this is documented in the api get
+if (!empty($published['alt'])) {
+    $published['description'] = $published['alt'];
+    unset($published['alt']); unset($published['placeholder']);
+} else if (!empty($published['placeholder'])) {
+    $published['description'] = $published['placeholder'];
+    unset($published['alt']); unset($published['placeholder']);
+}
+
+// Document form
+$this->documentFormControl($vars['name'], $published);
+
+// Prevent bonita polution
+foreach (array_merge($fields_and_defaults, ['placeholder' => false, 'value' => '', 'class' => '']) as $field => $default)
+    unset($this->vars[$field]);

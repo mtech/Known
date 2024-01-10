@@ -4,12 +4,11 @@ The following individuals have made major contributions to Known.
 
 ## Core team
 
-* Ben Werdmuller [http://werd.io](http://werd.io)
-* Erin Jo Richey [http://erinjo.is](http://erinjo.is)
+* Ben Werdmuller [https://werd.io](https://werd.io)
+* Erin Jo Richey [https://erinjorichey.com/](https://erinjorichey.com/)
+* Marcus Povey [https://www.marcus-povey.co.uk](https://www.marcus-povey.co.uk)
 
 Homepage: [https://withknown.com/](https://withknown.com/)
-
-Team Known site: [http://stream.withknown.com/](http://stream.withknown.com/)
 
 ## Community contributors
 
@@ -17,6 +16,7 @@ Team Known site: [http://stream.withknown.com/](http://stream.withknown.com/)
 
 ## How can I contribute?
 
+* Help fund the project via [Open Collective](https://opencollective.com/known)
 * Visit Known on GitHub: [https://github.com/idno/known](https://github.com/idno/known)
 * Check and file issues
 * Submit pull requests

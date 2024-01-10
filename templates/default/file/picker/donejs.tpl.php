@@ -1,17 +1,17 @@
 <?php
 
-    if (!empty($vars['file'])) {
+if (!empty($vars['file'])) {
 
-        $fileplot = 'parent.tinymce.activeEditor.windowManager.getParams().oninsert("'.\Idno\Core\Idno::site()->config()->getDisplayURL() . 'file/' . $vars['file']->file['_id'].'");';
+    $fileplot = 'window.parent.postMessage({mceAction: "customAction", data: {url: "'.\Idno\Core\Idno::site()->config()->getStaticURL() . 'file/' . $vars['file']->file['_id'].'"}}, "*");';
 
-    } else {
+} else {
 
-        $fileplot = '';
+    $fileplot = '';
 
-    }
+}
 
 ?>
 <script>
-    <?=$fileplot?>
-    parent.tinymce.activeEditor.windowManager.close();
+    <?php echo $fileplot?>
+    window.parent.postMessage({mceAction: 'close'}, "*");
 </script>

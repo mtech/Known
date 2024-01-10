@@ -3,30 +3,24 @@
 
         <div class="col-md-offset-1 col-md-10">
             <h1 class="p-name">
-                Oh no! Something went wrong.
-                <?php /*
-                <?php if (!empty($vars['exception'])) { ?>
-                Ooops! <?= get_class($vars['exception']); ?>
-                <?php } else { ?>
-                Oh no! Something went wrong.
-                <?php } ?> */ ?>
+                <?php echo \Idno\Core\Idno::site()->language()->_('Something went wrong.'); ?>
             </h1>
         </div>
     </div>
     <?php if (!empty($vars['exception'])) { ?>
     <div class="row">
         <div class="col-md-offset-1 col-md-10">
-            <p class="p-summary"><?= $vars['exception']->getMessage(); ?></p>
+            <p class="p-summary"><?php echo $vars['exception']->getMessage(); ?></p>
             <p>
-                <a href="#" onclick="window.history.back();">Click here to go back and try again.</a>
+                <?php echo \Idno\Core\Idno::site()->language()->_('<a href="#" onclick="window.history.back();">Click here to try again</a> or <a href="%s">click here to go back to the homepage</a>.', [\Idno\Core\Idno::site()->config()->getDisplayURL()]); ?>
             </p>
             <?php if (($debug = \Idno\Core\Idno::site()->config()->debug) && (!empty($debug))) { ?>
                 <p>
-                    <small><a href="#" onclick="$('#details').show(); return false;">Click here to see the technical details.</a></small>
+                    <small><a href="#" onclick="$('#details').show(); return false;"><?php echo \Idno\Core\Idno::site()->language()->_('Click here to see the technical details.'); ?></a></small>
                 </p>
                 <div id="details" style="display:none">
                     <pre>
-<?= $vars['exception'] ?>
+                <?php echo $vars['exception'] ?>
                     </pre>
                 </div>
             <?php } ?>
@@ -35,7 +29,7 @@
     <?php } else { ?>
     <div class="row">
         <div class="col-md-offset-1 col-md-10">
-            <p class="p-summary">Oh no! Something went wrong.</p>
+            <p class="p-summary"><?php echo \Idno\Core\Idno::site()->language()->_('Oh no! Something went wrong.'); ?></p>
         </div>
     </div>
     <?php } ?>

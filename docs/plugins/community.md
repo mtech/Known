@@ -1,4 +1,4 @@
-# Community plugins
+# Community Plugins
 
 The following plugins were created by members of the open source community. Like any open source plugin directory,
 listings here do not imply endorsement by the Known project team in any way.
@@ -8,11 +8,12 @@ listings here do not imply endorsement by the Known project team in any way.
 
 ### Content types
 
-* [Video](https://github.com/tjgillies/Video) – Post videos to your Known site, by [Tyler Gillies][]
+* [Video](https://github.com/cweiske/withknownVideo) – Post videos to your Known site, by [Christian Weiske][]
 * [Recipe](https://github.com/cleverdevil/Known-Recipes) – Post recipes to your Known site, by [Jonathan LaCour][]
 * [Review](https://github.com/cleverdevil/Known-Reviews) – Post reviews to your Known site, by [Jonathan LaCour][]
+* [Food](https://github.com/cleverdevil/Known-Food) – Log your eating and drinking to your Known site, by [Jonathan LaCour][]
+* [Watching](https://github.com/cleverdevil/Known-Watching) - Log what you watch (movies and TV) to your Known site, including an experimental Plex webhook, by [Jonathan LaCour][]
 * [Reactions](https://github.com/kylewm/KnownReactions) – Indieweb–style likes and reposts, by [Kyle Mahan][] 
-* [Journal](https://github.com/tinokremer/KnownJournal) - Post journal entries to your Known site, by [Tino Kremer][]
 
 ### Syndication plugins
 
@@ -23,7 +24,7 @@ listings here do not imply endorsement by the Known project team in any way.
 * [Diigo](https://github.com/timmmmyboy/Diigo) – Syndicate your bookmarks to Diigo, by [Tim Owens][]
 * [Github](https://github.com/mapkyca/KnownGithub) – Create issues and reply to comments on Github, all from your own site, 
     by [Marcus Povey][]
-* [App.net](https://github.com/mapkyca/KnownAppNet) – Syndicate to App.net, 
+* [App.net](https://github.com/mapkyca/KnownAppNet) – Syndicate to App.net (note: ADN shut down on 2017-03-15), 
     by [Marcus Povey][]
 * [Known Crosspost](https://github.com/mapkyca/KnownKnown) – Crosspost content to another Known site via the API, 
     by [Marcus Povey][]
@@ -31,11 +32,15 @@ listings here do not imply endorsement by the Known project team in any way.
 * [IRC](https://github.com/mapkyca/KnownIRC) – Post messages and links into IRC channels, 
     by [Marcus Povey][]
 * [IndieSyndicate](https://github.com/kylewm/KnownIndieSyndicate) – Syndicate via Micropub and Webmention, by [Kyle Mahan][]
+* [Pinboard](https://github.com/egoexpress/known-pinboard) - Syndicate your bookmarks to [Pinboard.in](https://pinboard.in), by [Björn Stierand][]
+* [Archive.org/WayBackMachine](https://github.com/mapkyca/KnownWaybackMachine) – Provides Wayback Machine archive.org support for Known, 
+    by [Marcus Povey][]
+* [Pnut.io](https://github.com/dg01d/KnownPnut) – Syndicate to [pnut.io](https://pnut.io/), 
+    by [Daniel Goldsmith][] 
+* [Mastodon](https://github.com/danito/KnownMastodon) - Syndicate to Mastodon, by [Daniel Nix][]
 
 ### System and Security
 
-* [HTML Output sanitisation](https://github.com/mapkyca/KnownHTMLPurifier) – Provides HTML Purifier user output sanitisation, 
-    by [Marcus Povey][]
 * [Two Factor Authentication](https://github.com/mapkyca/Known2FA) – Two factor authentication for logins, 
     by [Marcus Povey][]
 * [Sitemap.xml](https://github.com/mapkyca/KnownSitemap) – Automatically generate a sitemap.xml for your site, 
@@ -48,6 +53,8 @@ listings here do not imply endorsement by the Known project team in any way.
     by [Marcus Povey][]
 * [Akismet](https://github.com/mapkyca/KnownAkismet) – Wordpress Akismet spam filtering support for comments and webmentions, 
     by [Marcus Povey][]
+* [Matomo](https://codeberg.org/argovaerts/KnownMatomo) – Add Matomo Analytics to your site,
+    by [Arne Govaerts][]
 
 
 ### Browser Integration and Apps
@@ -57,9 +64,9 @@ listings here do not imply endorsement by the Known project team in any way.
 
 ### Import and Export
 
-* [Flickr Import](https://github.com/mapkyca/KnownFlickrImport) – Import content from your Flickr account, 
+* [Flickr Import](https://github.com/mapkyca/KnownFlickrDumpImport) – Import content from your Flickr account, 
     by [Marcus Povey][]
-* [File Picker](https://github.com/Decentralized–Sharing–Working–Group/idno–file–picker) – pick files from your
+* [File Picker](https://github.com/Decentralized-Sharing-Working-Group/idno-file-picker) – pick files from your
     Cozy, ownCloud, or remoteStorage server, by [Decentralized Sharing Community Group][decsharing]
 * [Moves Import](https://github.com/danito/KnownImportMoves) – Import your Moves–app.com data, 
     by [Daniel Nix][]
@@ -87,6 +94,9 @@ listings here do not imply endorsement by the Known project team in any way.
     by [Marcus Povey][]
 * [Emoji rendering](https://github.com/mapkyca/KnownEmoji) – Render Emoji characters (e.g. in Bridgy comments), 
     by [Marcus Povey][]
+* [Short Profile](https://github.com/egoexpress/known-shortprofile) – Cleans up the URLs displayed in the profile page. Also adds some additional icons, by [Björn Stierand][]  
+* [Cleverdevil Customizations](https://github.com/cleverdevil/CleverCustomize) – A small collection of customizations, by [Jonathan LaCour][]
+* [MastodonEmbed](https://github.com/danito/KnownEmbedMastodon) - Embed Mastodon status , by [Daniel Nix][]
 
 [Pranjal Pandey]: https://www.github.com/physcocode
 [Daniel Nix]: https://nxd4n.nixekinder.be
@@ -100,6 +110,10 @@ listings here do not imply endorsement by the Known project team in any way.
 [Tyler Gillies]: http://tylergillies.club/
 [Yann Sallou]: http://winds.fr/
 [Tino Kremer]: https://tinokremer.nl/
+[Björn Stierand]: https://bjoern.stierand.org/
+[Christian Weiske]: https://cweiske.de/
+[Daniel Goldsmith]: https://ascraeus.org/
+[Arne Govaerts]: https://q4.re
 
 ## Submissions
 

@@ -6,7 +6,7 @@
     <meta name="viewport" content="initial-scale=1.0">    <!-- So that mobile webkit will display zoomed in -->
     <meta name="format-detection" content="telephone=no"> <!-- disable auto telephone linking in iOS -->
 
-    <title>Reset your password</title>
+    <title><?php if (!empty($vars['title'])) echo $vars['title']; ?></title>
     <style type="text/css">
 
         /* Resets: see reset.css for details */
@@ -18,7 +18,7 @@
         table {border-spacing:0;}
         table td {border-collapse:collapse;}
         .yshortcuts a {border-bottom: none !important;}
-
+        span.preheader { display: none !important; }
 
         /* Constrain email width for small screens */
         @media screen and (max-width: 600px) {
@@ -37,8 +37,11 @@
 
     </style>
 </head>
-<body style="margin:0; padding:10px 0;" bgcolor="#ebebeb" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-
+<body style="margin:0; padding:10px 0;" bgcolor="#ebebeb" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0"><?php
+if (!empty($vars['preheader'])) {
+    ?><span class="preheader"><?php echo $vars['preheader']; ?></span><?php
+}
+?>
 <br>
 
 <!-- 100% wrapper (grey background) -->
@@ -54,18 +57,20 @@
 
                         <!-- ### BEGIN CONTENT ### -->
 
-                        <?=$vars['body']?>
+                        <?php echo $vars['body']?>
 
                         <!-- ### END CONTENT ### -->
 
-                        <hr>
+                        <hr style="border-top: 1px solid #cccccc;">
 
                         <?php
                             $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-                            $path = str_replace('/','_',$path);
+                            $path = str_replace('/', '_', $path);
                         ?>
 
-                        <em style="font-style:italic; font-size: 12px; color: #aaa;">Powered by <a href="https://withknown.com/?utm_source=transactional&utm_medium=email&utm_campaign=e<?=$path?>" style="color: #73b2e3; text-decoration: none;">Known</a>, the best way to publish content, discuss ideas, and share from a space you own.</em>
+                        <p style="text-align: center; margin-top: 15px;">
+                        <em style="font-style:italic; font-size: 12px; color: #aaa; text-decoration: center;"><?php echo \Idno\Core\Idno::site()->language()->_('Powered by') ?> <a href="https://withknown.com/?utm_source=transactional&utm_medium=email&utm_campaign=e<?php echo $path?>" style="color: #4c93cb; text-decoration: none;">Known</a>.</em>
+                        </p>
                         <br><br>
 
                     </td>
@@ -75,6 +80,11 @@
 
         </td>
     </tr>
+    <tr>
+        <td align="center" valign="top" bgcolor="#ebebeb" style="background-color: #ebebeb; padding-bottom: 3em;">
+            <p style="color: #999999; font-size: 12px;">Known, Inc. 421 Bryant St, San Francisco, CA, 94107</p>
+        </td>
+    </tr>    
 </table>
 <!--/100% wrapper-->
 <br>

@@ -1,33 +1,45 @@
 <?php
 
-    namespace Idno\Pages\Admin\Export {
+namespace Idno\Pages\Admin\Export {
 
-        use Idno\Common\Page;
-        use Idno\Core\Migration;
+    use Idno\Common\Page;
+    use Idno\Core\Migration;
 
-        class RSS extends Page
+    class RSS extends Page
+    {
+
+        function postContent()
         {
 
-            function postContent()
-            {
+            $this->adminGatekeeper();
 
-                $this->adminGatekeeper();
+            set_time_limit(0);
 
-                set_time_limit(0);
+            header('Content-type: text/rss');
+            header('Content-disposition: attachment; filename=export.rss');
 
-                header('Content-type: text/rss');
-                header('Content-disposition: attachment; filename=export.rss');
+            $hide_private = true;
+            if ($private = $this->getInput('allposts')) {
+                $hide_private = false;
+            }
 
-                $hide_private = true;
-                if ($private = $this->getInput('allposts')) {
-                    $hide_private = false;
+            if ($f = Migration::getExportRSS($hide_private)) {
+
+                $stats = fstat($f);
+
+                header('Content-Length: ' . $stats['size']);
+
+                while ($content = fgets($f)) {
+                    echo $content;
                 }
 
-                echo Migration::getExportRSS($hide_private);
-                exit;
-
+                fclose($f);
             }
+            exit;
 
         }
 
     }
+
+}
+
